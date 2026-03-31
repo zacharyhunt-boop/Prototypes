@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Right Rail</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #f2f2f5;
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+
+    /* ─────────────────────────────────────────
+       TOP NAV
+    ───────────────────────────────────────── */
+    #topnav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 52px;
+      background: rgba(248, 248, 250, 0.96);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      z-index: 200;
+    }
+
+    /* Search trigger (acts as palette opener) */
+    #nav-search-trigger {
+      width: 100%;
+      max-width: 420px;
+      height: 30px;
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 9px 0 8px;
+      cursor: pointer;
+      transition: background 0.14s, border-color 0.14s;
+      user-select: none;
+    }
+    #nav-search-trigger:hover {
+      background: rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.16);
+    }
+    #nav-search-trigger:focus-visible {
+      outline: 2px solid rgba(108,143,255,0.6);
+      outline-offset: 1px;
+    }
+    .trigger-icon { flex-shrink: 0; color: rgba(0,0,0,0.38); }
+    .trigger-placeholder {
+      flex: 1;
+      font-size: 0.8rem;
+      color: rgba(0,0,0,0.35);
+    }
+    .trigger-kbd {
+      font-size: 0.67rem;
+      color: rgba(0,0,0,0.38);
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+
+    /* ─────────────────────────────────────────
+       MAIN CONTENT
+    ───────────────────────────────────────── */
+    #main-content {
+      padding: 80px 28px 60px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── Page tabs ── */
+    #page-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding-bottom: 0;
+    }
+    .page-tab {
+      padding: 7px 14px 9px;
+      font-family: inherit;
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: rgba(0,0,0,0.4);
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.12s;
+      white-space: nowrap;
+      margin-bottom: -1px;
+    }
+    .page-tab:hover { color: rgba(0,0,0,0.7); }
+    .page-tab.active {
+      color: #3a5ce0;
+    }
+    .page-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: #3a5ce0;
+      border-radius: 2px 2px 0 0;
+    }
+
+    #notes-heading {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(0,0,0,0.4);
+      margin-bottom: 14px;
+      display: none;
+    }
+    #notes-heading.visible { display: block; }
+
+    .note-card {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.09);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: #2a2a2a;
+      margin-bottom: 8px;
+      animation: noteIn 0.22s ease;
+    }
+    .note-card .note-meta {
+      font-size: 0.69rem;
+      color: rgba(0,0,0,0.38);
+      margin-top: 5px;
+    }
+    @keyframes noteIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─────────────────────────────────────────
+       BACKDROP
+    ───────────────────────────────────────── */
+    #overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.15);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 150;
+    }
+    #overlay.open { opacity: 1; pointer-events: all; }
+
+    /* ─────────────────────────────────────────
+       COMMAND PALETTE
+    ───────────────────────────────────────── */
+    #palette {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px) scale(0.97);
+      width: 580px;
+      max-width: 92vw;
+      background: rgba(255, 255, 255, 0.99);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 14px;
+      box-shadow:
+        0 8px 40px rgba(0,0,0,0.12),
+        0 2px 8px rgba(0,0,0,0.07);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity 0.16s ease,
+        transform 0.2s cubic-bezier(0.34, 1.4, 0.64, 1);
+      z-index: 300;
+    }
+    #palette.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    /* ── Mode Label (note mode only) ── */
+    #mode-label {
+      display: none;
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6c8fff;
+      padding: 10px 16px 0;
+    }
+    #mode-label.visible { display: block; }
+
+    /* ── Input Row ── */
+    #input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px 10px;
+    }
+
+    /* ── Context Bar (account + policy chips) ── */
+    #context-bar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 12px 9px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .ctx-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 0.71rem;
+      font-weight: 500;
+      color: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.09);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .ctx-sep {
+      font-size: 0.75rem;
+      color: rgba(0,0,0,0.2);
+      flex-shrink: 0;
+      display: none;
+    }
+    .ctx-sep.visible { display: inline; }
+    /* Policy chip — interactive */
+    #policy-chip-wrap {
+      position: relative;
+      display: none;
+    }
+    #policy-chip-wrap.visible { display: inline-flex; }
+    #policy-chip-wrap .ctx-chip {
+      padding: 0;
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    #policy-chip-wrap .ctx-chip:hover {
+      background: rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.14);
+    }
+    /* Empty (no policy selected) state */
+    #policy-chip-inner.policy-empty {
+      border-style: dashed;
+      border-color: rgba(0,0,0,0.18);
+      background: transparent;
+    }
+    #policy-chip-inner.policy-empty:hover {
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,0,0,0.26);
+    }
+    #policy-chip-inner.policy-empty #policy-trigger-btn {
+      color: rgba(0,0,0,0.32);
+    }
+    #policy-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px 2px 9px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.71rem;
+      font-weight: 500;
+      color: rgba(0,0,0,0.45);
+      cursor: pointer;
+    }
+    /* Clear (×) button — shown only when a policy is selected */
+    #policy-clear-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.1);
+      border: none;
+      cursor: pointer;
+      font-size: 0.7rem;
+      line-height: 1;
+      color: rgba(0,0,0,0.45);
+      padding: 0;
+      flex-shrink: 0;
+      transition: background 0.1s, color 0.1s;
+    }
+    #policy-clear-btn:hover {
+      background: rgba(0,0,0,0.2);
+      color: rgba(0,0,0,0.7);
+    }
+    #policy-clear-btn.visible { display: inline-flex; }
+    /* Policy dropdown */
+    #policy-dropdown {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      min-width: 168px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 9px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+      overflow: hidden;
+      z-index: 400;
+      display: none;
+    }
+    #policy-dropdown.open { display: block; }
+    .policy-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      color: #333;
+      cursor: pointer;
+      transition: background 0.08s;
+    }
+    .policy-option:hover { background: rgba(74,108,247,0.07); }
+    .policy-option .pol-check {
+      width: 12px;
+      flex-shrink: 0;
+      color: #3a5ce0;
+      font-size: 0.75rem;
+    }
+    .policy-option.selected { color: #3a5ce0; font-weight: 500; }
+    #search-icon {
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      color: rgba(0,0,0,0.35);
+    }
+    #palette-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #111;
+      caret-color: #4a6cf7;
+    }
+    #palette-input::placeholder { color: rgba(0,0,0,0.3); }
+
+    /* ── Action Strip (below search, non-scrolling) ── */
+    #action-strip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 14px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    #action-strip.hidden { display: none; }
+
+    .strip-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: rgba(0,0,0,0.45);
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: color 0.1s, background 0.1s, border-color 0.1s;
+      white-space: nowrap;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .strip-chip:hover {
+      color: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.05);
+    }
+    .strip-chip.strip-active {
+      color: #3a5ce0;
+      background: rgba(74, 108, 247, 0.1);
+      border-color: rgba(74, 108, 247, 0.25);
+    }
+    .strip-chip .chip-icon { font-size: 0.8rem; line-height: 1; }
+
+    /* ── Results List ── */
+    #results-list {
+      padding: 5px;
+      max-height: 290px;
+      overflow-y: auto;
+    }
+    #results-list:empty { display: none; }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.09s;
+      user-select: none;
+    }
+    .result-item:hover,
+    .result-item.list-active {
+      background: rgba(74, 108, 247, 0.08);
+    }
+    .item-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: rgba(74,108,247,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .item-label {
+      font-size: 0.875rem;
+      color: #222;
+      font-weight: 450;
+    }
+    .item-hint {
+      margin-left: auto;
+      font-size: 0.69rem;
+      color: rgba(0,0,0,0.35);
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: inherit;
+    }
+
+    .empty-state {
+      padding: 18px 14px;
+      font-size: 0.82rem;
+      color: rgba(0,0,0,0.35);
+      text-align: center;
+    }
+
+    .no-results-header {
+      padding: 10px 14px 4px;
+      font-size: 0.75rem;
+      color: rgba(0,0,0,0.38);
+      letter-spacing: 0.03em;
+    }
+
+    .result-item.suggested .item-icon {
+      background: rgba(0,0,0,0.05);
+    }
+
+    /* ── Footer (always visible, two inner states) ── */
+    #palette-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 12px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      min-height: 38px;
+    }
+
+    /* inner state panels */
+    #footer-search,
+    #footer-note {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 8px;
+    }
+    #footer-note { display: none; }
+
+    /* shortcut groups */
+    .footer-shortcuts {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .shortcut-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .shortcut-keys {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .sk {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      font-family: inherit;
+      font-size: 0.65rem;
+      color: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 4px;
+      line-height: 1;
+    }
+    .sk.sk-arrow-pad {
+      width: 22px;
+      height: 22px;
+      padding: 0;
+    }
+    .shortcut-label {
+      font-size: 0.69rem;
+      color: rgba(0,0,0,0.38);
+      white-space: nowrap;
+    }
+
+    /* right side of footer */
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Feedback link button */
+    .feedback-link {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.72rem;
+      color: rgba(0,0,0,0.4);
+      padding: 3px 2px;
+      transition: color 0.12s;
+      text-decoration: underline;
+      text-decoration-color: rgba(0,0,0,0.15);
+      text-underline-offset: 2px;
+    }
+    .feedback-link:hover { color: rgba(0,0,0,0.65); }
+
+    /* Beta pill */
+    .beta-pill {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #3a5ce0;
+      background: rgba(74,108,247,0.08);
+      border: 1px solid rgba(74,108,247,0.22);
+      border-radius: 99px;
+      padding: 2px 7px;
+      line-height: 1.4;
+    }
+
+    /* Action buttons */
+    .footer-btn {
+      padding: 5px 11px;
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 500;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.12s, opacity 0.12s;
+    }
+    .footer-btn.secondary {
+      background: rgba(0,0,0,0.06);
+      color: rgba(0,0,0,0.5);
+    }
+    .footer-btn.secondary:hover { background: rgba(0,0,0,0.1); }
+    .footer-btn.primary { background: #4a6cf7; color: #fff; }
+    .footer-btn.primary:hover { background: #5c7bff; }
+    .footer-btn.primary:disabled { opacity: 0.32; cursor: default; }
+
+    /* Scrollbar */
+    #results-list::-webkit-scrollbar { width: 4px; }
+    #results-list::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.12);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════ TOP NAV ═══════════════ -->
+  <nav id="topnav">
+    <div id="nav-search-trigger" role="button" tabindex="0" aria-label="Open command palette (⌘K)">
+      <!-- Combined magnifying glass + sparkle icon -->
+      <svg class="trigger-icon" width="14" height="14" viewBox="0 0 20 20" fill="none">
+        <circle cx="8" cy="8.5" r="4.8" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M11.5 12.2L14.8 15.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M15.8 1.5L16.4 3.4L18.3 4L16.4 4.6L15.8 6.5L15.2 4.6L13.3 4L15.2 3.4Z" fill="currentColor"/>
+      </svg>
+      <span class="trigger-placeholder">Search or ask</span>
+      <kbd class="trigger-kbd">⌘K</kbd>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <div id="main-content">
+    <div id="page-tabs">
+      <button class="page-tab active" data-tab="all">All Policies</button>
+      <button class="page-tab" data-tab="general-liability">General Liability</button>
+      <button class="page-tab" data-tab="property">Property</button>
+    </div>
+    <div id="notes-heading">Notes</div>
+    <div id="notes-container"></div>
+  </div>
+
+  <!-- ═══════════════ BACKDROP ═══════════════ -->
+  <div id="overlay"></div>
+
+  <!-- ═══════════════ COMMAND PALETTE ═══════════════ -->
+  <div id="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+
+    <!-- Note-mode label (hidden until note mode) -->
+    <div id="mode-label">Add a note</div>
+
+    <!-- Input row -->
+    <div id="input-row">
+      <svg id="search-icon" viewBox="0 0 20 20" fill="none">
+        <circle cx="8" cy="8.5" r="4.8" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M11.5 12.2L14.8 15.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M15.8 1.5L16.4 3.4L18.3 4L16.4 4.6L15.8 6.5L15.2 4.6L13.3 4L15.2 3.4Z" fill="currentColor"/>
+      </svg>
+      <input
+        id="palette-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Search or ask…"
+      />
+    </div>
+
+    <!-- Context bar (account + optional policy) -->
+    <div id="context-bar">
+      <span class="ctx-chip" id="account-chip">Lumen Inc.</span>
+      <span class="ctx-sep" id="ctx-sep">›</span>
+      <div id="policy-chip-wrap">
+        <span class="ctx-chip policy-empty" id="policy-chip-inner">
+          <button type="button" id="policy-trigger-btn">
+            <span id="policy-label">Policy</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+              <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button type="button" id="policy-clear-btn" aria-label="Clear policy">✕</button>
+        </span>
+        <div id="policy-dropdown">
+          <div class="policy-option" data-value="General Liability">
+            <span class="pol-check"></span>General Liability
+          </div>
+          <div class="policy-option" data-value="Property">
+            <span class="pol-check"></span>Property
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action strip (below search, hidden when user is typing) -->
+    <div id="action-strip" role="toolbar" aria-label="Quick actions"></div>
+
+    <!-- Results list (visible only when typing) -->
+    <div id="results-list" role="listbox"></div>
+
+    <!-- Footer — always visible, swaps inner content by mode -->
+    <div id="palette-footer">
+
+      <!-- Search mode footer -->
+      <div id="footer-search">
+        <div class="footer-shortcuts">
+          <span class="shortcut-group">
+            <kbd class="sk sk-arrow-pad">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <!-- up -->
+                <path d="M6.5 1.5 L6.5 4"   stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M5 3 L6.5 1.5 L8 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <!-- down -->
+                <path d="M6.5 11.5 L6.5 9"   stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M5 10 L6.5 11.5 L8 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <!-- left -->
+                <path d="M1.5 6.5 L4 6.5"   stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M3 5 L1.5 6.5 L3 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <!-- right -->
+                <path d="M11.5 6.5 L9 6.5"   stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M10 5 L11.5 6.5 L10 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </kbd>
+            <span class="shortcut-label">to navigate</span>
+          </span>
+          <span class="shortcut-group">
+            <kbd class="sk">↵</kbd>
+            <span class="shortcut-label">to select</span>
+          </span>
+          <span class="shortcut-group">
+            <kbd class="sk">Esc</kbd>
+            <span class="shortcut-label">to close</span>
+          </span>
+        </div>
+        <div class="footer-right">
+          <button class="feedback-link">Provide Feedback</button>
+          <span class="beta-pill">Beta</span>
+        </div>
+      </div>
+
+      <!-- Note mode footer -->
+      <div id="footer-note">
+        <div class="footer-shortcuts">
+          <span class="shortcut-group">
+            <kbd class="sk">↵</kbd>
+            <span class="shortcut-label">save</span>
+          </span>
+          <span class="shortcut-group">
+            <kbd class="sk">Esc</kbd>
+            <span class="shortcut-label">discard</span>
+          </span>
+        </div>
+        <div class="footer-right">
+          <button id="cancel-btn" class="footer-btn secondary">Discard</button>
+          <button id="save-btn" class="footer-btn primary" disabled>Save Note</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Constants ──────────────────────────────────────────────
+    const MODES    = { SEARCH: 'search', NOTE: 'note' };
+    const POLICIES = ['General Liability', 'Property'];
+
+    const STRIP_ACTIONS = [
+      { id: 'take-note', icon: '📝', label: 'Take a Note' },
+      { id: 'action-1',  icon: '⚡', label: 'Action' },
+      { id: 'action-2',  icon: '⚡', label: 'Action' },
+      { id: 'action-3',  icon: '⚡', label: 'Action' },
+    ];
+
+    const LIST_ACTIONS = [
+      { id: 'take-note', icon: '📝', label: 'Take a Note', hint: '↵' },
+    ];
+
+    // ── State ──────────────────────────────────────────────────
+    let mode            = MODES.SEARCH;
+    let listIndex       = -1;   // -1 = nothing preselected
+    let stripIndex      = 0;
+    let onStrip         = false;
+    let mouseHasMoved   = false; // guards against phantom mouseenter on DOM rebuild
+    let selectedPolicy  = null; // null = account-level note (no policy selected)
+    let activeTab       = 'all'; // tracks the current page tab
+
+    // ── Element refs ───────────────────────────────────────────
+    const overlay        = document.getElementById('overlay');
+    const palette        = document.getElementById('palette');
+    const paletteInput   = document.getElementById('palette-input');
+    const resultsList    = document.getElementById('results-list');
+    const modeLabel      = document.getElementById('mode-label');
+    const footerSearch   = document.getElementById('footer-search');
+    const footerNote     = document.getElementById('footer-note');
+    const saveBtn        = document.getElementById('save-btn');
+    const cancelBtn      = document.getElementById('cancel-btn');
+    const navTrigger     = document.getElementById('nav-search-trigger');
+    const actionStrip    = document.getElementById('action-strip');
+    const notesContainer = document.getElementById('notes-container');
+    const notesHeading   = document.getElementById('notes-heading');
+    const searchIcon     = document.getElementById('search-icon');
+    const ctxSep         = document.getElementById('ctx-sep');
+    const policyChipWrap = document.getElementById('policy-chip-wrap');
+    const policyChipInner= document.getElementById('policy-chip-inner');
+    const policyTrigger  = document.getElementById('policy-trigger-btn');
+    const policyLabel    = document.getElementById('policy-label');
+    const policyClearBtn = document.getElementById('policy-clear-btn');
+    const policyDropdown = document.getElementById('policy-dropdown');
+
+    // ─────────────────────────────────────────────────────────
+    // STRIP RENDERING
+    // ─────────────────────────────────────────────────────────
+    function buildStrip() {
+      actionStrip.innerHTML = '';
+      STRIP_ACTIONS.forEach((sa, i) => {
+        const chip = document.createElement('button');
+        chip.className = 'strip-chip';
+        chip.dataset.index = i;
+        chip.setAttribute('tabindex', '-1');
+        chip.setAttribute('aria-label', sa.label);
+        chip.innerHTML = `<span class="chip-icon">${sa.icon}</span>${sa.label}`;
+        chip.addEventListener('click', () => {
+          stripIndex = i;
+          onStrip = true;
+          updateStripHighlight();
+          triggerStripAction(sa.id);
+        });
+        actionStrip.appendChild(chip);
+      });
+    }
+
+    function updateStripHighlight() {
+      actionStrip.querySelectorAll('.strip-chip').forEach((chip, i) => {
+        chip.classList.toggle('strip-active', onStrip && i === stripIndex);
+      });
+    }
+
+    function showStrip()  { actionStrip.classList.remove('hidden'); }
+    function hideStrip()  { actionStrip.classList.add('hidden'); }
+
+    // ─────────────────────────────────────────────────────────
+    // LIST RENDERING
+    // ─────────────────────────────────────────────────────────
+    function renderResults(query = '') {
+      mouseHasMoved = false; // reset so hover won't fire on freshly inserted elements
+      const q = query.toLowerCase().trim();
+
+      // No query → show action strip, clear results list
+      if (!q) {
+        showStrip();
+        resultsList.innerHTML = '';
+        resultsList._items = [];
+        listIndex = -1;
+        onStrip = false;
+        updateStripHighlight();
+        return;
+      }
+
+      // Has query → hide action strip, show filtered results
+      hideStrip();
+      onStrip = false;
+      resultsList.innerHTML = '';
+
+      const filtered = LIST_ACTIONS.filter(a => a.label.toLowerCase().includes(q));
+
+      if (filtered.length === 0) {
+        const header = document.createElement('div');
+        header.className = 'no-results-header';
+        header.textContent = `No results for "${query}"`;
+        resultsList.appendChild(header);
+
+        const suggestedActions = [
+          { id: 'turn-into-note',  icon: '📝', label: 'Turn Into Note',  hint: '↵' },
+          { id: 'compose-email',   icon: '✉️',  label: 'Compose Email',   hint: '↵' },
+        ];
+
+        suggestedActions.forEach((action, i) => {
+          const el = document.createElement('div');
+          el.className = 'result-item suggested';
+          el.setAttribute('role', 'option');
+          el.innerHTML = `
+            <span class="item-icon">${action.icon}</span>
+            <span class="item-label">${action.label}</span>
+            <kbd class="item-hint">${action.hint}</kbd>
+          `;
+          el.addEventListener('click', () => triggerListAction(action.id, query));
+          el.addEventListener('mouseenter', () => {
+            if (!mouseHasMoved) return;
+            listIndex = i;
+            updateListHighlight();
+          });
+          resultsList.appendChild(el);
+        });
+
+        resultsList._items = suggestedActions;
+        listIndex = -1;
+        updateListHighlight();
+        return;
+      }
+
+      filtered.forEach((action, i) => {
+        const el = document.createElement('div');
+        el.className = 'result-item';
+        el.setAttribute('role', 'option');
+        el.innerHTML = `
+          <span class="item-icon">${action.icon}</span>
+          <span class="item-label">${action.label}</span>
+          <kbd class="item-hint">${action.hint}</kbd>
+        `;
+        el.addEventListener('click', () => triggerListAction(action.id));
+        el.addEventListener('mouseenter', () => {
+          if (!mouseHasMoved) return;
+          listIndex = i;
+          updateListHighlight();
+        });
+        resultsList.appendChild(el);
+      });
+
+      resultsList._items = filtered;
+      // Don't preselect — user presses ↓ to highlight
+      listIndex = -1;
+      updateListHighlight();
+    }
+
+    function updateListHighlight() {
+      resultsList.querySelectorAll('.result-item').forEach((el, i) => {
+        el.classList.toggle('list-active', i === listIndex);
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // MODES
+    // ─────────────────────────────────────────────────────────
+    const PENCIL_PATH = `
+      <path d="M14.5 2.5l3 3L6 17H3v-3L14.5 2.5z"
+            stroke="currentColor" stroke-width="1.6"
+            stroke-linejoin="round" fill="none"/>
+    `;
+    const SEARCH_PATH = `
+      <circle cx="8" cy="8.5" r="4.8" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M11.5 12.2L14.8 15.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M15.8 1.5L16.4 3.4L18.3 4L16.4 4.6L15.8 6.5L15.2 4.6L13.3 4L15.2 3.4Z" fill="currentColor"/>
+    `;
+
+    function enterNoteMode(initialText = '') {
+      mode = MODES.NOTE;
+      modeLabel.classList.add('visible');
+      footerSearch.style.display = 'none';
+      footerNote.style.display   = 'flex';
+      hideStrip();
+      resultsList.innerHTML = '';
+      resultsList._items = [];
+      paletteInput.value = initialText;
+      paletteInput.placeholder = 'Type your note…';
+      searchIcon.innerHTML = PENCIL_PATH;
+      saveBtn.disabled = !initialText;
+      listIndex = -1;
+      onStrip = false;
+      updateStripHighlight();
+      // Seed policy from the active tab (null for "All Policies")
+      const TAB_TO_POLICY = {
+        'general-liability': 'General Liability',
+        'property':          'Property',
+      };
+      selectedPolicy = TAB_TO_POLICY[activeTab] ?? null;
+      // Show policy chip in note mode
+      ctxSep.classList.add('visible');
+      policyChipWrap.classList.add('visible');
+      renderPolicyChip();
+      paletteInput.focus();
+    }
+
+    function enterSearchMode() {
+      mode = MODES.SEARCH;
+      modeLabel.classList.remove('visible');
+      footerSearch.style.display = 'flex';
+      footerNote.style.display   = 'none';
+      paletteInput.value = '';
+      paletteInput.placeholder = 'Search or ask…';
+      searchIcon.innerHTML = SEARCH_PATH;
+      listIndex = -1;
+      stripIndex = 0;
+      onStrip = false;
+      // Hide policy chip in search mode
+      ctxSep.classList.remove('visible');
+      policyChipWrap.classList.remove('visible');
+      policyDropdown.classList.remove('open');
+      renderResults('');   // clears list, shows strip
+      updateStripHighlight();
+      paletteInput.focus();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // OPEN / CLOSE
+    // ─────────────────────────────────────────────────────────
+    function openPalette() {
+      overlay.classList.add('open');
+      palette.classList.add('open');
+      enterSearchMode();
+    }
+
+    function closePalette() {
+      overlay.classList.remove('open');
+      palette.classList.remove('open');
+      mode = MODES.SEARCH;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // ACTIONS
+    // ─────────────────────────────────────────────────────────
+    function triggerStripAction(id) {
+      if (id === 'take-note') { enterNoteMode(); return; }
+      // Future: wire other strip actions here
+    }
+
+    function triggerListAction(id, query = '') {
+      if (id === 'take-note')       { enterNoteMode(); return; }
+      if (id === 'turn-into-note')  { enterNoteMode(query); return; }
+      if (id === 'compose-email')   { /* TODO */ return; }
+    }
+
+    function saveNote() {
+      const text = paletteInput.value.trim();
+      if (!text) return;
+      const card = document.createElement('div');
+      card.className = 'note-card';
+      const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      card.innerHTML = `<div>${escapeHtml(text)}</div><div class="note-meta">${ts}</div>`;
+      notesContainer.prepend(card);
+      notesHeading.classList.add('visible');
+      closePalette();
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // KEYBOARD HANDLER
+    // ─────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      // Global: ⌘K / Ctrl+K toggles palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        palette.classList.contains('open') ? closePalette() : openPalette();
+        return;
+      }
+
+      if (!palette.classList.contains('open')) return;
+
+      // Escape: close dropdown first, then back one level
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (policyDropdown.classList.contains('open')) {
+          policyDropdown.classList.remove('open');
+          return;
+        }
+        if (mode === MODES.NOTE) enterSearchMode();
+        else closePalette();
+        return;
+      }
+
+      if (mode === MODES.SEARCH) {
+        const items = resultsList._items || [];
+        const stripVisible = !actionStrip.classList.contains('hidden');
+
+        if (e.key === 'ArrowLeft' && stripVisible) {
+          e.preventDefault();
+          onStrip = true;
+          stripIndex = Math.max(stripIndex - 1, 0);
+          updateStripHighlight();
+          updateListHighlight();
+        } else if (e.key === 'ArrowRight' && stripVisible) {
+          e.preventDefault();
+          onStrip = true;
+          stripIndex = Math.min(stripIndex + 1, STRIP_ACTIONS.length - 1);
+          updateStripHighlight();
+          updateListHighlight();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (stripVisible && !onStrip) {
+            // Enter strip navigation first if strip is showing
+            onStrip = true;
+            updateStripHighlight();
+            updateListHighlight();
+          } else if (items.length > 0) {
+            onStrip = false;
+            listIndex = Math.min(listIndex + 1, items.length - 1);
+            updateStripHighlight();
+            updateListHighlight();
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (!onStrip && listIndex > 0) {
+            listIndex = Math.max(listIndex - 1, 0);
+          } else if (!onStrip && listIndex <= 0) {
+            listIndex = -1;
+          }
+          updateStripHighlight();
+          updateListHighlight();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (onStrip) {
+            triggerStripAction(STRIP_ACTIONS[stripIndex].id);
+          } else if (listIndex >= 0 && items[listIndex]) {
+            triggerListAction(items[listIndex].id, paletteInput.value.trim());
+          }
+        }
+      } else if (mode === MODES.NOTE) {
+        if (e.key === 'Enter' && !e.shiftKey && !saveBtn.disabled) {
+          e.preventDefault();
+          saveNote();
+        }
+      }
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // INPUT EVENTS
+    // ─────────────────────────────────────────────────────────
+    paletteInput.addEventListener('input', () => {
+      if (mode === MODES.SEARCH) {
+        renderResults(paletteInput.value);
+      } else {
+        saveBtn.disabled = paletteInput.value.trim().length === 0;
+      }
+    });
+
+    saveBtn.addEventListener('click', saveNote);
+    cancelBtn.addEventListener('click', enterSearchMode);
+
+    // Open palette from nav trigger
+    navTrigger.addEventListener('click', openPalette);
+    navTrigger.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPalette(); }
+    });
+
+    // Close on backdrop click
+    overlay.addEventListener('click', closePalette);
+
+    // Page tab switching
+    document.querySelectorAll('.page-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeTab = tab.dataset.tab;
+      });
+    });
+
+    // Track real mouse movement so phantom mouseenter on DOM rebuild is ignored
+    resultsList.addEventListener('mousemove', () => { mouseHasMoved = true; });
+
+    // ─────────────────────────────────────────────────────────
+    // POLICY DROPDOWN
+    // ─────────────────────────────────────────────────────────
+    function renderPolicyChip() {
+      if (selectedPolicy) {
+        policyChipInner.classList.remove('policy-empty');
+        policyLabel.textContent = selectedPolicy;
+        policyClearBtn.classList.add('visible');
+      } else {
+        policyChipInner.classList.add('policy-empty');
+        policyLabel.textContent = 'Policy';
+        policyClearBtn.classList.remove('visible');
+      }
+      policyDropdown.querySelectorAll('.policy-option').forEach(opt => {
+        const isSelected = opt.dataset.value === selectedPolicy;
+        opt.classList.toggle('selected', isSelected);
+        opt.querySelector('.pol-check').textContent = isSelected ? '✓' : '';
+      });
+    }
+
+    policyTrigger.addEventListener('click', e => {
+      e.stopPropagation();
+      policyDropdown.classList.toggle('open');
+    });
+
+    policyClearBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      selectedPolicy = null;
+      renderPolicyChip();
+      policyDropdown.classList.remove('open');
+    });
+
+    policyDropdown.querySelectorAll('.policy-option').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        selectedPolicy = opt.dataset.value;
+        renderPolicyChip();
+        policyDropdown.classList.remove('open');
+      });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+      policyDropdown.classList.remove('open');
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────────
+    buildStrip();
+  </script>
+
+</body>
+</html>
