@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Preview</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #525659;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: #333;
+    }
+
+    /* ── Title Bar ────────────────────────────────────────────── */
+    #title-bar {
+      background: #3a3a3c;
+      color: #fff;
+      padding: 0 16px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      border-bottom: 1px solid #1c1c1e;
+      user-select: none;
+    }
+
+    #doc-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #e5e5e7;
+    }
+
+    .pdf-icon {
+      width: 22px;
+      height: 26px;
+      background: #e74c3c;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    #close-btn {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: none;
+      color: #8e8e93;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1;
+    }
+    #close-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+    /* ── Main Layout ──────────────────────────────────────────── */
+    #main { flex: 1; display: flex; overflow: hidden; }
+
+    /* ── PDF Viewer ───────────────────────────────────────────── */
+    #pdf-area {
+      flex: 1;
+      overflow-y: auto;
+      background: #525659;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .pdf-page {
+      background: white;
+      width: 680px;
+      max-width: 100%;
+      padding: 72px 80px 60px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.45);
+      position: relative;
+      line-height: 1.65;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 11pt;
+    }
+
+    .page-num {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9pt;
+      color: #999;
+    }
+
+    .pdf-title {
+      text-align: center;
+      font-size: 15pt;
+      font-weight: bold;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+    .pdf-authors {
+      text-align: center;
+      font-size: 10pt;
+      color: #444;
+      margin-bottom: 3px;
+    }
+    .pdf-affiliation {
+      text-align: center;
+      font-size: 9pt;
+      color: #777;
+      margin-bottom: 22px;
+    }
+    .pdf-abstract { margin: 0 16px 18px; }
+    .pdf-abstract-title {
+      font-weight: bold;
+      font-size: 10pt;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .pdf-section { margin-top: 18px; }
+    .pdf-section-title {
+      font-weight: bold;
+      font-size: 11.5pt;
+      margin-bottom: 8px;
+    }
+    .pdf-paragraph {
+      text-align: justify;
+      margin-bottom: 10px;
+    }
+
+    /* ── Highlights ───────────────────────────────────────────── */
+    .pdf-highlight {
+      border-radius: 2px;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .pdf-highlight:hover { filter: brightness(0.88); }
+    .pdf-highlight.active { filter: brightness(0.78); }
+
+    /* ── Annotation Popup ─────────────────────────────────────── */
+    #annotation-popup {
+      position: fixed;
+      background: #fff;
+      color: #3b2a1a;
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.1);
+      white-space: nowrap;
+      transform: translateX(-50%);
+      transition: background 0.12s;
+    }
+    #annotation-popup:hover { background: #f5f0eb; }
+    #annotation-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #fff;
+    }
+
+    /* ── Side Panel ───────────────────────────────────────────── */
+    #side-panel {
+      width: 320px;
+      flex-shrink: 0;
+      background: #fff;
+      border-left: 1px solid #d8d8d8;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Tabs */
+    #tab-bar {
+      display: flex;
+      border-bottom: 1px solid #e2e2e2;
+      flex-shrink: 0;
+      background: #f7f7f7;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 11px 0;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #999;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .tab-btn:hover { color: #555; }
+    .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+
+    /* Tab content panes */
+    .tab-content { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+    .tab-content.active { display: flex; }
+
+    /* Annotations tab */
+    #tab-annotations { padding: 16px; gap: 16px; }
+
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+#annotations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .empty-annotations {
+      text-align: center;
+      color: #c8c8c8;
+      font-size: 13px;
+      padding: 20px 12px;
+      line-height: 1.6;
+    }
+
+    /* Annotation cards — no overflow:hidden so dropdown isn't clipped */
+    .annotation-card {
+      border: 1px solid #ebebeb;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: box-shadow 0.15s;
+      position: relative;
+    }
+    .annotation-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .annotation-card.focused { box-shadow: 0 0 0 2px #1a73e8; }
+
+    /* Inset quoted text — single line with ellipsis */
+    .annotation-quote {
+      margin: 12px 12px 0;
+      padding: 5px 9px;
+      font-size: 11.5px;
+      font-style: italic;
+      color: #666;
+      border-left: 3px solid #ccc;
+      border-radius: 0 4px 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Thread body: column layout — header row then full-width content */
+    .thread-body {
+      padding: 10px 12px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Header row: avatar + identity + menu */
+    .thread-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+    }
+
+    .thread-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .thread-identity { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+
+    .thread-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #222;
+      line-height: 1.3;
+    }
+
+    .thread-date {
+      font-size: 11px;
+      color: #bbb;
+      line-height: 1.3;
+    }
+
+    /* 3-dot menu button */
+    .thread-menu-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .thread-menu-btn {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .thread-menu-btn:hover { color: #555; background: #f0f0f0; }
+
+    .thread-menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 26px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+      z-index: 200;
+      min-width: 110px;
+      overflow: hidden;
+    }
+    .thread-menu-dropdown.open { display: block; }
+
+    .thread-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #333;
+      cursor: pointer;
+      transition: background 0.1s;
+      user-select: none;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .thread-menu-item:hover { background: #f5f5f5; }
+    .thread-menu-item.danger { color: #e74c3c; }
+    .thread-menu-item.danger:hover { background: #ffeaea; }
+
+    /* Full-width note input / display (below the header row) */
+    .annotation-note-input {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #333;
+      resize: none;
+      outline: none;
+      min-height: 60px;
+      line-height: 1.5;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .annotation-note-input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+    }
+    .annotation-note-input::placeholder { color: #c8c8c8; }
+
+    .thread-input-wrap { display: flex; flex-direction: column; gap: 7px; }
+
+    .save-btn {
+      align-self: flex-end;
+      padding: 5px 14px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .save-btn:hover { background: #1557b0; }
+
+    /* Saved note display */
+    .saved-note-text {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .saved-note-text.empty {
+      color: #ccc;
+      font-style: italic;
+    }
+
+    /* Replies */
+    .replies-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reply-item {
+      border-top: 1px solid #f2f2f2;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .reply-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .reply-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.2px;
+    }
+
+    .reply-identity { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+
+    .reply-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #222;
+      line-height: 1.3;
+    }
+
+    .reply-date {
+      font-size: 10.5px;
+      color: #bbb;
+      line-height: 1.3;
+    }
+
+    .reply-text {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    /* Reply compose area */
+    .reply-compose {
+      border-top: 1px solid #f2f2f2;
+      padding: 10px 12px;
+      display: none;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .reply-compose.open { display: flex; }
+
+    .reply-compose-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .reply-input {
+      flex: 1;
+      padding: 7px 9px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #333;
+      resize: none;
+      outline: none;
+      min-height: 56px;
+      line-height: 1.5;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .reply-input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+    }
+    .reply-input::placeholder { color: #c8c8c8; }
+
+    .reply-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .reply-cancel-btn {
+      padding: 5px 12px;
+      background: none;
+      color: #888;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .reply-cancel-btn:hover { background: #f5f5f5; }
+
+    /* Reply bar at bottom of card */
+    .reply-bar {
+      padding: 8px 12px 12px;
+    }
+
+    .reply-btn {
+      background: none;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #1a73e8;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .reply-btn:hover { color: #1557b0; }
+
+    /* Page group sections */
+    .page-group { display: flex; flex-direction: column; gap: 10px; }
+
+    .page-group-header {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      padding: 4px 0 2px;
+      border-bottom: 1px solid #efefef;
+      margin-bottom: 2px;
+    }
+
+    /* Placeholder tabs */
+    .tab-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 13px;
+      gap: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body>
+
+<!-- Title Bar -->
+<div id="title-bar">
+  <div id="doc-title">
+    <div class="pdf-icon">PDF</div>
+    <span>Advances in Natural Language Processing.pdf</span>
+  </div>
+  <button id="close-btn" title="Close document">&#x2715;</button>
+</div>
+
+<div id="main">
+
+  <!-- PDF Viewer -->
+  <div id="pdf-area">
+
+    <!-- Page 1 -->
+    <div class="pdf-page" data-page="1">
+      <div class="pdf-title">Advances in Natural Language Processing:<br>A Survey of Large Language Models</div>
+      <div class="pdf-authors">Jane Smith¹, Robert Chen², Alice Johnson¹</div>
+      <div class="pdf-affiliation">¹Stanford University &nbsp;&nbsp;&nbsp; ²MIT CSAIL</div>
+
+      <div class="pdf-abstract">
+        <div class="pdf-abstract-title">Abstract</div>
+        <p class="pdf-paragraph">The rapid development of large language models (LLMs) has fundamentally transformed the landscape of natural language processing. This survey provides a comprehensive overview of the state-of-the-art techniques, architectures, and training methodologies that have driven recent breakthroughs. We examine the scaling laws governing model performance, the emergence of in-context learning, and the challenges of alignment and safety in deployed systems.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">1. Introduction</div>
+        <p class="pdf-paragraph">Natural language processing has undergone a paradigm shift over the past decade. Where once task-specific models dominated the field, the advent of transformer-based architectures and massive pre-training has given rise to general-purpose systems capable of performing a wide range of linguistic tasks with minimal fine-tuning.</p>
+        <p class="pdf-paragraph">The success of models such as GPT, BERT, and their successors has demonstrated that scale—measured in both model parameters and training data—plays a crucial role in emergent capabilities. Behaviors that appear absent in smaller models can arise spontaneously as model size increases, a phenomenon that has been described as "emergence" and remains an active area of theoretical investigation.</p>
+        <p class="pdf-paragraph">This survey aims to synthesize the key findings across recent literature, identify open problems, and provide a roadmap for future research directions. We pay particular attention to the practical challenges of deploying LLMs in real-world applications, including issues of factual accuracy, hallucination, and alignment with human values.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">2. Background and Notation</div>
+        <p class="pdf-paragraph">We define a language model as a probability distribution P(x₁, x₂, …, xₙ) over sequences of tokens drawn from a vocabulary V. Modern autoregressive language models factorize this joint distribution into a product of conditional probabilities, where each token is predicted given all preceding tokens in the sequence.</p>
+        <p class="pdf-paragraph">The transformer architecture, introduced by Vaswani et al. (2017), forms the backbone of virtually all contemporary large language models. Its core innovation—the self-attention mechanism—allows the model to dynamically weight the relevance of different positions in the input sequence when producing each output representation.</p>
+      </div>
+
+      <div class="page-num">1</div>
+    </div>
+
+    <!-- Page 2 -->
+    <div class="pdf-page" data-page="2">
+      <div class="pdf-section">
+        <div class="pdf-section-title">3. Training Methodologies</div>
+        <p class="pdf-paragraph">The training of large language models typically proceeds in multiple stages. The first stage, often called pre-training, involves exposing the model to vast quantities of unlabeled text data and optimizing a self-supervised objective such as next-token prediction or masked language modeling.</p>
+        <p class="pdf-paragraph">Subsequent fine-tuning stages adapt the pre-trained model to specific tasks or align it with human preferences. Reinforcement learning from human feedback (RLHF) has emerged as a particularly effective technique for the latter goal, enabling models to generate outputs that humans find more helpful, harmless, and honest.</p>
+        <p class="pdf-paragraph">Instruction tuning, in which models are trained on curated datasets of instruction-response pairs, has proven remarkably effective at improving the ability of language models to follow natural language directives. This technique, combined with chain-of-thought prompting, has enabled models to tackle complex multi-step reasoning tasks that previously required specialized architectures.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">4. Scaling Laws</div>
+        <p class="pdf-paragraph">Empirical research has revealed surprisingly regular relationships between model scale and performance. Kaplan et al. (2020) demonstrated that model loss follows a power-law relationship with model size, dataset size, and compute budget, allowing researchers to predict the performance of larger models from smaller-scale experiments.</p>
+        <p class="pdf-paragraph">These scaling laws have important practical implications. They suggest that, holding compute budget fixed, there exists an optimal allocation between model size and training tokens. The "Chinchilla" scaling laws proposed by Hoffmann et al. (2022) indicated that many existing large models were significantly undertrained relative to their compute-optimal point.</p>
+        <p class="pdf-paragraph">However, the applicability of smooth scaling laws has been questioned in light of emergent capabilities—abilities that appear discontinuously as model scale increases. Tasks such as multi-digit arithmetic, word unscrambling, and analogical reasoning have been observed to exhibit sharp phase transitions rather than gradual improvement.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">5. Alignment and Safety</div>
+        <p class="pdf-paragraph">Ensuring that large language models behave in accordance with human values and intentions represents one of the most pressing challenges in the field. Models trained purely on next-token prediction may generate text that is factually incorrect, harmful, or misaligned with the goals of their operators and users.</p>
+        <p class="pdf-paragraph">Constitutional AI and related techniques attempt to encode explicit principles into the training process, enabling models to self-critique and revise their outputs. These approaches represent an important step toward scalable oversight—the challenge of maintaining meaningful human control over systems that may eventually surpass human capabilities in important domains.</p>
+      </div>
+
+      <div class="page-num">2</div>
+    </div>
+
+    <!-- Page 3 -->
+    <div class="pdf-page" data-page="3">
+      <div class="pdf-section">
+        <div class="pdf-section-title">6. Evaluation and Benchmarks</div>
+        <p class="pdf-paragraph">Evaluating the capabilities of large language models is a complex and contested endeavor. Traditional benchmarks such as GLUE and SuperGLUE, which measure performance on discrete NLP tasks, have largely been saturated by contemporary models and no longer provide meaningful signal for comparing frontier systems.</p>
+        <p class="pdf-paragraph">More recent evaluations have shifted toward holistic assessments that probe reasoning, knowledge, and instruction-following across a diverse range of tasks. BIG-Bench, MMLU, and HellaSwag represent examples of this approach, though the rapid pace of model development means that even these benchmarks are quickly approaching saturation.</p>
+        <p class="pdf-paragraph">Human evaluation remains an important complement to automated benchmarks, particularly for assessing the quality of open-ended text generation. However, human evaluation is expensive, slow, and subject to various forms of bias, including preferences for fluent text even when it is factually incorrect.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">7. Applications and Deployment</div>
+        <p class="pdf-paragraph">Large language models have been deployed across a remarkable diversity of applications, from code generation and scientific discovery to customer service and educational tutoring. The versatility of these systems reflects the generality of language as a medium for encoding knowledge and reasoning.</p>
+        <p class="pdf-paragraph">Retrieval-augmented generation (RAG) has emerged as a widely adopted technique for grounding language model outputs in verified external knowledge, reducing hallucination and enabling models to access up-to-date information beyond their training cutoff. The integration of language models with external tools and APIs has further extended their capabilities.</p>
+        <p class="pdf-paragraph">Multimodal extensions that integrate language with vision, audio, and other modalities have opened new application domains. Vision-language models can now describe images, answer questions about visual content, and generate images from textual descriptions, enabling novel human-computer interaction paradigms.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">8. Conclusion</div>
+        <p class="pdf-paragraph">The field of natural language processing stands at an inflection point. Large language models have achieved remarkable capabilities across a wide range of tasks, and the pace of progress shows no clear signs of slowing. Yet fundamental challenges remain—in alignment, reliability, interpretability, and efficiency—that will require sustained research effort to address.</p>
+        <p class="pdf-paragraph">We hope this survey provides a useful foundation for researchers entering the field and a reference for practitioners navigating the rapidly evolving landscape of large language models. The coming years promise continued advances that will further transform the relationship between humans and intelligent systems.</p>
+      </div>
+
+      <div class="page-num">3</div>
+    </div>
+
+  </div><!-- /pdf-area -->
+
+  <!-- Side Panel -->
+  <div id="side-panel">
+    <div id="tab-bar">
+      <button class="tab-btn" data-tab="details">Details</button>
+      <button class="tab-btn active" data-tab="annotations">Annotations</button>
+      <button class="tab-btn" data-tab="activity">Activity</button>
+      <button class="tab-btn" data-tab="data">Data</button>
+    </div>
+
+    <!-- Annotations Tab -->
+    <div id="tab-annotations" class="tab-content active">
+      <div style="flex:1; min-height: 0;">
+        <div class="section-label">Annotations</div>
+        <div id="annotations-list">
+          <div class="empty-annotations" id="empty-msg">
+            Select text in the document<br>to add an annotation.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Tab -->
+    <div id="tab-details" class="tab-content">
+      <div class="tab-placeholder">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Details panel
+      </div>
+    </div>
+
+    <!-- Activity Tab -->
+    <div id="tab-activity" class="tab-content">
+      <div class="tab-placeholder">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Activity panel
+      </div>
+    </div>
+
+    <!-- Data Tab -->
+    <div id="tab-data" class="tab-content">
+      <div class="tab-placeholder">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+        </svg>
+        Data panel
+      </div>
+    </div>
+
+  </div><!-- /side-panel -->
+
+</div><!-- /main -->
+
+<!-- Floating annotate button -->
+<div id="annotation-popup">&#x2B; Annotate</div>
+
+<script>
+  // ── Highlight color palette ──────────────────────────────────
+  const COLORS = [
+    { bg: '#ffd600', label: 'yellow' },
+    { bg: '#69f0ae', label: 'green'  },
+    { bg: '#40c4ff', label: 'blue'   },
+    { bg: '#ff80ab', label: 'pink'   },
+    { bg: '#ea80fc', label: 'purple' },
+  ];
+  let colorIndex = 0;
+
+  // ── Element refs ─────────────────────────────────────────────
+  const pdfArea        = document.getElementById('pdf-area');
+  const sidePanel      = document.getElementById('side-panel');
+  const popup          = document.getElementById('annotation-popup');
+  const annotationList = document.getElementById('annotations-list');
+  const emptyMsg       = document.getElementById('empty-msg');
+
+  // ── Tab switching ─────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── Close button ──────────────────────────────────────────────
+  document.getElementById('close-btn').addEventListener('click', () => window.close());
+
+  // ── Pending selection state ───────────────────────────────────
+  let pending = null; // { range, pageNum }
+
+  function hidePopup() {
+    popup.style.display = 'none';
+    pending = null;
+  }
+
+  // Show popup after mouse is released over a text selection in the PDF
+  document.addEventListener('mouseup', e => {
+    if (sidePanel.contains(e.target) || e.target === popup) return;
+
+    // Small delay so selection is finalised
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.toString().trim()) { hidePopup(); return; }
+
+      const range = sel.getRangeAt(0);
+      if (!pdfArea.contains(range.commonAncestorContainer)) { hidePopup(); return; }
+
+      // Determine page number
+      let node = range.commonAncestorContainer;
+      while (node && !(node.dataset && node.dataset.page)) node = node.parentElement;
+      const pageNum = node ? node.dataset.page : '?';
+
+      pending = { range: range.cloneRange(), pageNum };
+
+      // Position popup above the selection
+      const rect = range.getBoundingClientRect();
+      popup.style.left  = (rect.left + rect.width / 2) + 'px';
+      popup.style.top   = (rect.top - 44) + 'px';
+      popup.style.display = 'block';
+    }, 10);
+  });
+
+  // Hide popup on clicks outside
+  document.addEventListener('mousedown', e => {
+    if (e.target !== popup) hidePopup();
+  });
+
+  // ── Commit annotation ─────────────────────────────────────────
+  popup.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!pending) return;
+
+    const { range, pageNum } = pending;
+    const text = range.toString().trim();
+    if (!text) { hidePopup(); return; }
+
+    const color  = COLORS[colorIndex % COLORS.length];
+    colorIndex++;
+    const id = 'ann-' + Date.now();
+
+    // Wrap selection in a <mark>
+    const mark = document.createElement('mark');
+    mark.className = 'pdf-highlight';
+    mark.dataset.annotationId = id;
+    mark.style.backgroundColor = color.bg + '55'; // ~33% opacity
+
+    try {
+      range.surroundContents(mark);
+    } catch (_) {
+      // Selection crosses element boundaries – extract and re-insert
+      const frag = range.extractContents();
+      mark.appendChild(frag);
+      range.insertNode(mark);
+    }
+
+    // Clicking a highlight focuses its card
+    mark.addEventListener('click', () => focusCard(id, mark));
+
+    window.getSelection().removeAllRanges();
+    hidePopup();
+
+    createCard(id, text, pageNum, color);
+
+    // Switch to annotations tab and scroll card into view
+    document.querySelector('[data-tab="annotations"]').click();
+    setTimeout(() => {
+      const card = document.getElementById('card-' + id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 60);
+  });
+
+  // ── User + date helpers ───────────────────────────────────────
+  const USER = { name: 'Jane Smith', initials: 'JS', avatarColor: '#5b7fa6' };
+
+  function formatDateLine(d) {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function formatTimeLine(d) {
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  // ── Page group helpers ────────────────────────────────────────
+  function findOrCreateGroup(pageNum) {
+    const groupId = 'group-page-' + pageNum;
+    let group = document.getElementById(groupId);
+    if (!group) {
+      group = document.createElement('div');
+      group.className = 'page-group';
+      group.id = groupId;
+      group.dataset.page = pageNum;
+
+      const header = document.createElement('div');
+      header.className = 'page-group-header';
+      header.textContent = 'Page ' + pageNum;
+      group.appendChild(header);
+
+      // Insert in page-number order
+      const existing = [...annotationList.querySelectorAll('.page-group')];
+      const insertBefore = existing.find(g => Number(g.dataset.page) > Number(pageNum));
+      if (insertBefore) {
+        annotationList.insertBefore(group, insertBefore);
+      } else {
+        annotationList.appendChild(group);
+      }
+    }
+    return group;
+  }
+
+  // ── 3-dot menu ────────────────────────────────────────────────
+  let openMenu = null;
+
+  function closeOpenMenu() {
+    if (openMenu) { openMenu.classList.remove('open'); openMenu = null; }
+  }
+
+  document.addEventListener('click', closeOpenMenu);
+
+  function makeMenuBtn(onEdit, onDelete) {
+    const wrap = document.createElement('div');
+    wrap.className = 'thread-menu-wrap';
+
+    const btn = document.createElement('button');
+    btn.className = 'thread-menu-btn';
+    btn.title = 'More options';
+    btn.innerHTML = '&#8942;'; // ⋮
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'thread-menu-dropdown';
+
+    const editItem = document.createElement('button');
+    editItem.className = 'thread-menu-item';
+    editItem.textContent = 'Edit';
+
+    const deleteItem = document.createElement('button');
+    deleteItem.className = 'thread-menu-item danger';
+    deleteItem.textContent = 'Delete';
+
+    dropdown.appendChild(editItem);
+    dropdown.appendChild(deleteItem);
+    wrap.appendChild(btn);
+    wrap.appendChild(dropdown);
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (dropdown.classList.contains('open')) {
+        closeOpenMenu();
+      } else {
+        closeOpenMenu();
+        dropdown.classList.add('open');
+        openMenu = dropdown;
+      }
+    });
+
+    editItem.addEventListener('click', e => { e.stopPropagation(); closeOpenMenu(); onEdit(); });
+    deleteItem.addEventListener('click', e => { e.stopPropagation(); closeOpenMenu(); onDelete(); });
+
+    return wrap;
+  }
+
+  // ── Reply users (for collaborative feel) ─────────────────────
+  const REPLY_USERS = [
+    { name: 'Alex Park',    initials: 'AP', avatarColor: '#7b5ea6' },
+    { name: 'Sam Torres',   initials: 'ST', avatarColor: '#4a9e6b' },
+    { name: 'Jane Smith',   initials: 'JS', avatarColor: '#5b7fa6' },
+  ];
+  let replyUserIndex = 1; // start with Alex Park for first reply
+
+  function makeReplyItem(user, text, date) {
+    const item = document.createElement('div');
+    item.className = 'reply-item';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'reply-header';
+
+    const av = document.createElement('div');
+    av.className = 'reply-avatar';
+    av.style.background = user.avatarColor;
+    av.textContent = user.initials;
+
+    const identity = document.createElement('div');
+    identity.className = 'reply-identity';
+
+    const nm = document.createElement('span');
+    nm.className = 'reply-name';
+    nm.textContent = user.name;
+
+    const dt = document.createElement('span');
+    dt.className = 'reply-date';
+    dt.textContent = formatDateLine(date) + ' · ' + formatTimeLine(date);
+
+    identity.appendChild(nm);
+    identity.appendChild(dt);
+    hdr.appendChild(av);
+    hdr.appendChild(identity);
+
+    const txt = document.createElement('div');
+    txt.className = 'reply-text';
+    txt.textContent = text;
+
+    item.appendChild(hdr);
+    item.appendChild(txt);
+    return item;
+  }
+
+  // ── Create annotation card ────────────────────────────────────
+  function createCard(id, quote, pageNum, color) {
+    emptyMsg.style.display = 'none';
+
+    const now = new Date();
+    const card = document.createElement('div');
+    card.className = 'annotation-card';
+    card.id = 'card-' + id;
+
+    // Inset quoted text — full width, 1-line ellipsis via CSS
+    const quoteDiv = document.createElement('div');
+    quoteDiv.className = 'annotation-quote';
+    quoteDiv.style.borderLeftColor = color.bg;
+    quoteDiv.style.background = color.bg + '1a';
+    quoteDiv.textContent = quote;
+
+    // ── Thread body (column: header row + full-width content) ──
+    const body = document.createElement('div');
+    body.className = 'thread-body';
+
+    // Header row: avatar + identity + menu
+    const header = document.createElement('div');
+    header.className = 'thread-header';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'thread-avatar';
+    avatar.style.background = USER.avatarColor;
+    avatar.textContent = USER.initials;
+
+    const identity = document.createElement('div');
+    identity.className = 'thread-identity';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'thread-name';
+    nameEl.textContent = USER.name;
+
+    const dateEl = document.createElement('span');
+    dateEl.className = 'thread-date';
+    dateEl.textContent = formatDateLine(now) + ' · ' + formatTimeLine(now);
+
+    identity.appendChild(nameEl);
+    identity.appendChild(dateEl);
+
+    // Input area (edit mode) — full width, below header
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'thread-input-wrap';
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'annotation-note-input';
+    textarea.placeholder = 'Add a note…';
+    textarea.rows = 3;
+    textarea.addEventListener('focus', () => card.classList.add('focused'));
+    textarea.addEventListener('blur',  () => card.classList.remove('focused'));
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'save-btn';
+    saveBtn.textContent = 'Save';
+
+    inputWrap.appendChild(textarea);
+    inputWrap.appendChild(saveBtn);
+
+    // Saved display (view mode)
+    const savedText = document.createElement('div');
+    savedText.className = 'saved-note-text empty';
+    savedText.style.display = 'none';
+
+    function enterEditMode() {
+      textarea.value = savedText.classList.contains('empty') ? '' : savedText.textContent;
+      inputWrap.style.display = 'flex';
+      savedText.style.display = 'none';
+      setTimeout(() => textarea.focus(), 30);
+    }
+
+    function enterViewMode(text) {
+      if (text) {
+        savedText.textContent = text;
+        savedText.classList.remove('empty');
+      } else {
+        savedText.textContent = '';
+        savedText.classList.add('empty');
+      }
+      savedText.style.display = '';
+      inputWrap.style.display = 'none';
+      card.classList.remove('focused');
+    }
+
+    saveBtn.addEventListener('click', () => enterViewMode(textarea.value.trim()));
+
+    const menuWrap = makeMenuBtn(
+      () => enterEditMode(),
+      () => removeAnnotation(id, card)
+    );
+
+    header.appendChild(avatar);
+    header.appendChild(identity);
+    header.appendChild(menuWrap);
+
+    body.appendChild(header);
+    body.appendChild(inputWrap);
+    body.appendChild(savedText);
+
+    card.appendChild(quoteDiv);
+    card.appendChild(body);
+
+    // ── Replies list ──────────────────────────────────────────
+    const repliesList = document.createElement('div');
+    repliesList.className = 'replies-list';
+    card.appendChild(repliesList);
+
+    // Reply compose area
+    const replyCompose = document.createElement('div');
+    replyCompose.className = 'reply-compose';
+
+    const composeRow = document.createElement('div');
+    composeRow.className = 'reply-compose-row';
+
+    const composeAvatar = document.createElement('div');
+    composeAvatar.className = 'reply-avatar';
+    composeAvatar.style.background = USER.avatarColor;
+    composeAvatar.textContent = USER.initials;
+
+    const replyInput = document.createElement('textarea');
+    replyInput.className = 'reply-input';
+    replyInput.placeholder = 'Add a reply…';
+    replyInput.rows = 2;
+
+    composeRow.appendChild(composeAvatar);
+    composeRow.appendChild(replyInput);
+
+    const replyActions = document.createElement('div');
+    replyActions.className = 'reply-actions';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'reply-cancel-btn';
+    cancelBtn.textContent = 'Cancel';
+
+    const replySaveBtn = document.createElement('button');
+    replySaveBtn.className = 'save-btn';
+    replySaveBtn.textContent = 'Reply';
+
+    replyActions.appendChild(cancelBtn);
+    replyActions.appendChild(replySaveBtn);
+
+    replyCompose.appendChild(composeRow);
+    replyCompose.appendChild(replyActions);
+    card.appendChild(replyCompose);
+
+    // Reply bar
+    const replyBar = document.createElement('div');
+    replyBar.className = 'reply-bar';
+
+    const replyBtn = document.createElement('button');
+    replyBtn.className = 'reply-btn';
+    replyBtn.textContent = 'Reply';
+    replyBar.appendChild(replyBtn);
+    card.appendChild(replyBar);
+
+    // Reply button interactions
+    replyBtn.addEventListener('click', () => {
+      replyCompose.classList.add('open');
+      replyBar.style.display = 'none';
+      setTimeout(() => replyInput.focus(), 30);
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      replyCompose.classList.remove('open');
+      replyInput.value = '';
+      replyBar.style.display = '';
+    });
+
+    replySaveBtn.addEventListener('click', () => {
+      const text = replyInput.value.trim();
+      if (!text) return;
+      const user = REPLY_USERS[replyUserIndex % REPLY_USERS.length];
+      replyUserIndex++;
+      repliesList.appendChild(makeReplyItem(user, text, new Date()));
+      replyInput.value = '';
+      replyCompose.classList.remove('open');
+      replyBar.style.display = '';
+    });
+
+    // Hover syncs highlight in PDF
+    card.addEventListener('mouseenter', () => setHighlightActive(id, true));
+    card.addEventListener('mouseleave', () => setHighlightActive(id, false));
+
+    const group = findOrCreateGroup(pageNum);
+    group.appendChild(card);
+
+    setTimeout(() => textarea.focus(), 80);
+  }
+
+  function focusCard(id, mark) {
+    document.querySelector('[data-tab="annotations"]').click();
+    const card = document.getElementById('card-' + id);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const inputWrap = card.querySelector('.thread-input-wrap');
+    if (inputWrap && inputWrap.style.display !== 'none') {
+      inputWrap.querySelector('textarea').focus();
+    }
+    mark.classList.add('active');
+    setTimeout(() => mark.classList.remove('active'), 900);
+  }
+
+  function removeAnnotation(id, card) {
+    const mark = pdfArea.querySelector(`[data-annotation-id="${id}"]`);
+    if (mark) {
+      const parent = mark.parentNode;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+    }
+    const group = card.closest('.page-group');
+    card.remove();
+    // Remove group if it has no more cards
+    if (group && !group.querySelector('.annotation-card')) group.remove();
+    if (!annotationList.querySelector('.annotation-card')) {
+      emptyMsg.style.display = '';
+    }
+  }
+
+  function setHighlightActive(id, on) {
+    const mark = pdfArea.querySelector(`[data-annotation-id="${id}"]`);
+    if (mark) mark.classList.toggle('active', on);
+  }
+</script>
+
+</body>
+</html>
