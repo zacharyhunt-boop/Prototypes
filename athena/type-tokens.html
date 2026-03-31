@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Tokens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* ── Backgrounds (Meridian family) ── */
+      --bg:              #1A1210;
+      --bg-card:         #2D1D1A;
+      --tab-active-bg:   #3A2420;
+
+      /* ── Borders (Meridian/700 based) ── */
+      --border:          rgba(108, 97, 95, 0.28);
+      --border-subtle:   rgba(108, 97, 95, 0.13);
+
+      /* ── Typography ── */
+      --text-primary:    #F9EEC6;   /* compass-cream/100  */
+      --text-secondary:  #ABA5A3;   /* meridian/600       */
+      --text-dim:        #6C615F;   /* meridian/700       */
+
+      /* ── Token chrome ── */
+      --token-green:     #50CD62;   /* atlas-green/500    */
+      --ref-teal:        #16BDCA;   /* beacon-teal/400    */
+      --tag-bg:          rgba(108, 97, 95, 0.15);
+
+      /* ── Unused badge ── */
+      --unused-color:    #6C615F;
+      --unused-border:   rgba(108, 97, 95, 0.35);
+
+      /* ── Fonts ── */
+      --font-ui:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono:    'SF Mono', 'Fira Code', ui-monospace, monospace;
+      --font-reckless:'Reckless', 'Fraunces', 'Playfair Display', Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 80px 48px 120px;
+    }
+
+    /* ─── Page header ──────────────────────────────────── */
+    .page-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .page-note {
+      margin-top: 20px;
+      padding: 12px 16px;
+      background: rgba(22, 189, 202, 0.05);
+      border: 1px solid rgba(22, 189, 202, 0.18);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .page-note strong {
+      color: var(--ref-teal);
+      font-weight: 500;
+    }
+
+    /* ─── Tabs ──────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      padding: 9px 18px 10px;
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      transition: color 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .tab-btn:hover { color: var(--text-primary); }
+
+    .tab-btn.active {
+      color: var(--text-primary);
+      background: var(--tab-active-bg);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 1px;
+      background: var(--tab-active-bg);
+    }
+
+    /* ─── Panels ─────────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ─── Sections ───────────────────────────────────────── */
+    .section { margin-top: 72px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .section-tag {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ─── Subsection ─────────────────────────────────────── */
+    .subsection { margin-top: 40px; }
+
+    .subsection + .subsection {
+      margin-top: 48px;
+      padding-top: 48px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .subsection-header { margin-bottom: 20px; }
+
+    .subsection-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .subsection-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ─── Type: Token list ───────────────────────────────── */
+    .token-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .size-group-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 16px 20px 8px;
+    }
+
+    .size-group-label:first-child { padding-top: 0; }
+
+    /* ─── Type: Token item ───────────────────────────────── */
+    .token-item {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+
+    .token-item:hover { border-color: rgba(249, 238, 198, 0.1); }
+
+    .token-meta {
+      padding: 16px 20px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .token-name {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--token-green);
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .token-ref {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ref-teal);
+      opacity: 0.7;
+    }
+
+    .token-specs { display: flex; flex-direction: column; gap: 2px; }
+
+    .spec-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.8;
+    }
+
+    .spec-key { color: var(--text-dim); }
+    .spec-val { color: var(--text-secondary); }
+
+    .token-sample {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    .token-sample-text {
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       COLOR PAGE
+    ═══════════════════════════════════════════════════════ */
+
+    .color-group-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 16px 0 8px;
+    }
+
+    .color-group-label:first-child { padding-top: 0; }
+
+    /* ─── Color item ─────────────────────────────────────── */
+    .color-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 2px;
+      transition: border-color 0.15s;
+    }
+
+    .color-item:hover { border-color: rgba(249, 238, 198, 0.1); }
+
+    /* ─── Inkwell ─────────────────────────────────────────── */
+    .inkwell-wrap {
+      flex-shrink: 0;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .inkwell {
+      width: 40px;
+      height: 40px;
+      border-radius: 50% 50% 50% 4px;
+      transform: rotate(-45deg);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.10),
+        0 2px 8px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+
+    /* ─── Color info ─────────────────────────────────────── */
+    .color-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .color-token-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--token-green);
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .color-ref {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ref-teal);
+      opacity: 0.75;
+    }
+
+    .color-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin-top: 1px;
+    }
+
+    /* ─── Hex badge ──────────────────────────────────────── */
+    .color-hex {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      background: rgba(108, 97, 95, 0.12);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    /* ─── Unused badge ───────────────────────────────────── */
+    .unused-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--unused-color);
+      border: 1px solid var(--unused-border);
+      border-radius: 3px;
+      padding: 2px 6px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .unused-badge::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--unused-color);
+      opacity: 0.7;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SPACING PAGE
+    ═══════════════════════════════════════════════════════ */
+
+    .spacing-legend {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 32px;
+      margin-bottom: 4px;
+    }
+
+    .spacing-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .legend-dot.full  { background: rgba(255, 90, 31, 0.55); }
+    .legend-dot.half  { background: rgba(22, 189, 202, 0.45); }
+    .legend-dot.large { background: rgba(144, 97, 249, 0.45); }
+
+    /* ─── Spacing row ────────────────────────────────────── */
+    .spacing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .spacing-item {
+      display: grid;
+      grid-template-columns: 180px 1fr 56px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .spacing-item:hover { border-color: rgba(249, 238, 198, 0.1); }
+
+    .spacing-meta {
+      padding: 12px 18px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .spacing-token {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--token-green);
+    }
+
+    .spacing-step-label {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── Track + bar ────────────────────────────────────── */
+    .spacing-track {
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .spacing-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 32px;
+    }
+
+    /* tick at start */
+    .spacing-tick {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .spacing-bar {
+      height: 20px;
+      border-radius: 0 3px 3px 0;
+      flex-shrink: 0;
+    }
+
+    .spacing-bar.full  { background: rgba(255, 90, 31, 0.40); border: 1px solid rgba(255, 90, 31, 0.30); border-left: none; }
+    .spacing-bar.half  { background: rgba(22, 189, 202, 0.30); border: 1px solid rgba(22, 189, 202, 0.25); border-left: none; }
+    .spacing-bar.large { background: rgba(144, 97, 249, 0.30); border: 1px solid rgba(144, 97, 249, 0.25); border-left: none; }
+
+    /* ─── Px value ───────────────────────────────────────── */
+    .spacing-value {
+      padding: 0 16px 0 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RADIUS PAGE
+    ═══════════════════════════════════════════════════════ */
+
+    .radius-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* Section divider between primitive & semantic groups */
+    .radius-group-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 20px 0 8px;
+    }
+
+    .radius-group-label:first-child { padding-top: 0; }
+
+    .radius-item {
+      display: grid;
+      grid-template-columns: 220px 1fr 72px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+      min-height: 72px;
+    }
+
+    .radius-item:hover { border-color: rgba(249, 238, 198, 0.1); }
+
+    .radius-meta {
+      padding: 14px 18px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      align-self: stretch;
+    }
+
+    .radius-token {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--token-green);
+    }
+
+    .radius-ref {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ref-teal);
+      opacity: 0.75;
+    }
+
+    .radius-kind-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      margin-top: 1px;
+    }
+
+    /* ─── Swatch area ─────────────────────────────────────── */
+    .radius-swatch-area {
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* The demo square — fixed at 56×56, radius varies */
+    .radius-demo {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      background: rgba(255, 90, 31, 0.18);
+      border: 1.5px solid rgba(255, 90, 31, 0.50);
+    }
+
+    /* For semantic items use teal */
+    .radius-demo.semantic {
+      background: rgba(22, 189, 202, 0.15);
+      border-color: rgba(22, 189, 202, 0.45);
+    }
+
+    /* Corner callout — shows just one corner enlarged for small radii */
+    .radius-corner-hint {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .radius-corner-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    /* ─── Value cell ──────────────────────────────────────── */
+    .radius-value {
+      padding: 0 16px 0 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SHADOW PAGE
+    ═══════════════════════════════════════════════════════ */
+
+    .shadow-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .shadow-item {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .shadow-item:hover { border-color: rgba(249, 238, 198, 0.1); }
+
+    .shadow-meta {
+      padding: 20px 22px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .shadow-token {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--token-green);
+    }
+
+    .shadow-ref {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ref-teal);
+      opacity: 0.75;
+    }
+
+    .shadow-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    .shadow-css {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      word-break: break-all;
+    }
+
+    /* ─── Demo area ───────────────────────────────────────── */
+    /* Cream surface so warm Meridian shadows read clearly    */
+    .shadow-demo-area {
+      background: #C8BDA0; /* compass-cream/300 darkened slightly */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 40px;
+    }
+
+    .shadow-demo-card {
+      background: #F9EEC6; /* compass-cream/100 */
+      border-radius: 8px;
+      width: 160px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shadow-demo-label {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: #6C615F; /* meridian/700 */
+      text-transform: uppercase;
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 680px) {
+      .page { padding: 40px 24px 80px; }
+      .token-item { grid-template-columns: 1fr; }
+      .token-meta { border-right: none; border-bottom: 1px solid var(--border); }
+      .color-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-eyebrow">Design System</div>
+  <h1 class="page-title">Design Tokens</h1>
+  <p class="page-subtitle">Primitive and semantic tokens for typography and color.</p>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-panel="panel-text">Text</button>
+    <button class="tab-btn" data-panel="panel-color">Color</button>
+    <button class="tab-btn" data-panel="panel-spacing">Spacing</button>
+    <button class="tab-btn" data-panel="panel-radius">Corner Radius</button>
+    <button class="tab-btn" data-panel="panel-shadow">Shadow</button>
+  </nav>
+
+  <!-- ════════════════════════════════════════
+       TEXT PANEL
+  ════════════════════════════════════════ -->
+  <div id="panel-text" class="panel active">
+    <div class="page-note" style="margin-top:32px;">
+      <strong>Fonts:</strong> <em>Case</em> uses <strong>Inter</strong> (variable, 100–900).
+      <em>Reckless</em> is a commercial typeface by Displaay — <strong>Fraunces</strong> (Google Fonts) is shown as a visual substitute.
+      Line heights and letter-spacing are standard values inferred from the scale.
+    </div>
+    <div id="type-root"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SPACING PANEL
+  ════════════════════════════════════════ -->
+  <div id="panel-spacing" class="panel">
+    <div id="spacing-root"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       RADIUS PANEL
+  ════════════════════════════════════════ -->
+  <div id="panel-radius" class="panel">
+    <div id="radius-root"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SHADOW PANEL
+  ════════════════════════════════════════ -->
+  <div id="panel-shadow" class="panel">
+    <div id="shadow-root"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       COLOR PANEL
+  ════════════════════════════════════════ -->
+  <div id="panel-color" class="panel">
+    <div id="color-root"></div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ══════════════════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.panel).classList.add('active');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+//  TYPE TOKENS
+// ══════════════════════════════════════════════════════════════
+const WEIGHT_MAP = {
+  'light':300, 'semi-light':350, 'regular':400,
+  'medium':500, 'semibold':600, 'bold':700,
+};
+
+const CASE_SPECS = {
+  12: { lineHeight:'16px', letterSpacing:'0'        },
+  14: { lineHeight:'20px', letterSpacing:'0'        },
+  16: { lineHeight:'24px', letterSpacing:'0'        },
+  18: { lineHeight:'28px', letterSpacing:'-0.01em'  },
+  20: { lineHeight:'28px', letterSpacing:'-0.015em' },
+  24: { lineHeight:'32px', letterSpacing:'-0.02em'  },
+  30: { lineHeight:'36px', letterSpacing:'-0.025em' },
+};
+
+const RECKLESS_SPECS = {
+  24: { lineHeight:'28px', letterSpacing:'-0.02em' },
+  30: { lineHeight:'36px', letterSpacing:'-0.03em' },
+};
+
+const PRIMITIVE_CASE_SIZES    = [12,14,16,18,20,24,30];
+const PRIMITIVE_CASE_WEIGHTS  = ['semi-light','regular','medium'];
+const PRIMITIVE_RECKLESS_SIZES   = [24,30];
+const PRIMITIVE_RECKLESS_WEIGHTS = ['regular','bold'];
+
+const SEMANTIC_DISPLAY = [
+  { token:'text/display/1/regular', ref:'reckless/30/regular', font:'reckless', size:30, weight:'regular' },
+  { token:'text/display/1/bold',    ref:'reckless/30/bold',    font:'reckless', size:30, weight:'bold'    },
+  { token:'text/display/2/regular', ref:'reckless/24/regular', font:'reckless', size:24, weight:'regular' },
+  { token:'text/display/2/bold',    ref:'reckless/24/bold',    font:'reckless', size:24, weight:'bold'    },
+];
+const SEMANTIC_HEADINGS = [
+  { token:'text/heading/h1/light',   ref:'case/30/light',   font:'case', size:30, weight:'light'   },
+  { token:'text/heading/h1/regular', ref:'case/30/regular', font:'case', size:30, weight:'regular'  },
+  { token:'text/heading/h1/bold',    ref:'case/30/bold',    font:'case', size:30, weight:'bold'     },
+  { token:'text/heading/h2/light',   ref:'case/24/light',   font:'case', size:24, weight:'light'    },
+  { token:'text/heading/h2/regular', ref:'case/24/regular', font:'case', size:24, weight:'regular'  },
+  { token:'text/heading/h2/bold',    ref:'case/24/bold',    font:'case', size:24, weight:'bold'     },
+  { token:'text/heading/h3/light',   ref:'case/20/light',   font:'case', size:20, weight:'light'    },
+  { token:'text/heading/h3/regular', ref:'case/20/regular', font:'case', size:20, weight:'regular'  },
+  { token:'text/heading/h3/bold',    ref:'case/20/bold',    font:'case', size:20, weight:'bold'     },
+];
+const SEMANTIC_SUBTITLES = [
+  { token:'text/subtitle/1/light',   ref:'case/18/light',   font:'case', size:18, weight:'light'   },
+  { token:'text/subtitle/1/regular', ref:'case/18/regular', font:'case', size:18, weight:'regular'  },
+  { token:'text/subtitle/1/bold',    ref:'case/18/bold',    font:'case', size:18, weight:'bold'     },
+  { token:'text/subtitle/2/light',   ref:'case/16/light',   font:'case', size:16, weight:'light'    },
+  { token:'text/subtitle/2/regular', ref:'case/16/regular', font:'case', size:16, weight:'regular'  },
+  { token:'text/subtitle/2/bold',    ref:'case/16/bold',    font:'case', size:16, weight:'bold'     },
+];
+const SEMANTIC_BODY = [
+  { token:'text/body/1/light',   ref:'case/14/light',   font:'case', size:14, weight:'light'   },
+  { token:'text/body/1/regular', ref:'case/14/regular', font:'case', size:14, weight:'regular'  },
+  { token:'text/body/1/bold',    ref:'case/14/bold',    font:'case', size:14, weight:'bold'     },
+  { token:'text/body/2/light',   ref:'case/12/light',   font:'case', size:12, weight:'light'    },
+  { token:'text/body/2/regular', ref:'case/12/regular', font:'case', size:12, weight:'regular'  },
+  { token:'text/body/2/bold',    ref:'case/12/bold',    font:'case', size:12, weight:'bold'     },
+];
+const SEMANTIC_COMPONENTS = [
+  { token:'text/component/button/default',       font:'case', size:14, weight:'medium',  sample:'Button Label'  },
+  { token:'text/component/button/disabled',      font:'case', size:14, weight:'regular', sample:'Button Label'  },
+  { token:'text/component/table-header/default', font:'case', size:12, weight:'medium',  sample:'Column Header' },
+  { token:'text/component/badge/default',        font:'case', size:11, weight:'regular', sample:'Badge'         },
+  { token:'text/component/input-label/default',  font:'case', size:12, weight:'regular', sample:'Input Label'   },
+];
+
+function getSpecs(font, size) {
+  return font === 'reckless' ? RECKLESS_SPECS[size] : CASE_SPECS[size];
+}
+function getFontFamily(font) {
+  return font === 'reckless'
+    ? "'Reckless','Fraunces','Playfair Display',Georgia,serif"
+    : "'Inter',-apple-system,sans-serif";
+}
+function renderTokenItem({ token, ref, font, size, weight, sample }) {
+  const specs = getSpecs(font, size) || { lineHeight:'auto', letterSpacing:'0' };
+  const fontWeight = WEIGHT_MAP[weight] ?? 400;
+  const fontFamily = getFontFamily(font);
+  const fontSize   = size + 'px';
+  const fontLabel  = font === 'reckless' ? 'Reckless' : 'Case (Inter)';
+  const sampleText = sample || (size >= 24 ? 'The quick brown fox' : size >= 18 ? 'The quick brown fox jumps' : 'The quick brown fox jumps over the lazy dog');
+  const sampleStyle = [
+    `font-family:${fontFamily}`,
+    `font-size:${fontSize}`,
+    `font-weight:${fontWeight}`,
+    `line-height:${specs.lineHeight}`,
+    `letter-spacing:${specs.letterSpacing}`,
+    `color:#F9EEC6`,
+  ].join(';');
+
+  return `
+    <div class="token-item">
+      <div class="token-meta">
+        <div class="token-name">${token}</div>
+        ${ref ? `<div class="token-ref">→ ${ref}</div>` : ''}
+        <div class="token-specs">
+          <div class="spec-row"><span class="spec-key">font-family</span><span class="spec-val">${fontLabel}</span></div>
+          <div class="spec-row"><span class="spec-key">font-size</span><span class="spec-val">${fontSize}</span></div>
+          <div class="spec-row"><span class="spec-key">font-weight</span><span class="spec-val">${fontWeight} (${weight})</span></div>
+          <div class="spec-row"><span class="spec-key">line-height</span><span class="spec-val">${specs.lineHeight}</span></div>
+          <div class="spec-row"><span class="spec-key">letter-spacing</span><span class="spec-val">${specs.letterSpacing}</span></div>
+        </div>
+      </div>
+      <div class="token-sample">
+        <span class="token-sample-text" style="${sampleStyle}">${sampleText}</span>
+      </div>
+    </div>`;
+}
+
+function renderPrimitiveCaseTokens() {
+  return PRIMITIVE_CASE_SIZES.map(size => {
+    const label = `<div class="size-group-label">${size}px</div>`;
+    const items = PRIMITIVE_CASE_WEIGHTS.map(w =>
+      renderTokenItem({ token:`text/primitive/case/${size}/${w}`, font:'case', size, weight:w })
+    ).join('');
+    return label + items;
+  }).join('');
+}
+function renderPrimitiveRecklessTokens() {
+  return PRIMITIVE_RECKLESS_SIZES.map(size => {
+    const label = `<div class="size-group-label">${size}px</div>`;
+    const items = PRIMITIVE_RECKLESS_WEIGHTS.map(w =>
+      renderTokenItem({ token:`text/primitive/reckless/${size}/${w}`, font:'reckless', size, weight:w })
+    ).join('');
+    return label + items;
+  }).join('');
+}
+
+document.getElementById('type-root').innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Primitive</span>
+      <span class="section-title">Primitive Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Case — Inter Variable</div>
+        <div class="subsection-desc">Raw scale tokens for the Case typeface across all sizes and core weights.</div>
+      </div>
+      <div class="token-list">${renderPrimitiveCaseTokens()}</div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Reckless</div>
+        <div class="subsection-desc">Raw scale tokens for the Reckless display typeface.</div>
+      </div>
+      <div class="token-list">${renderPrimitiveRecklessTokens()}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Semantic</span>
+      <span class="section-title">Semantic Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Display Text</div>
+        <div class="subsection-desc">Hero sections, marketing pages, large editorial moments.</div>
+      </div>
+      <div class="token-list">${SEMANTIC_DISPLAY.map(t => renderTokenItem(t)).join('')}</div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Headings</div>
+        <div class="subsection-desc">Page titles, section headers, card headers.</div>
+      </div>
+      <div class="token-list">
+        <div class="size-group-label">h1 — 30px</div>
+        ${SEMANTIC_HEADINGS.filter(t=>t.size===30).map(t=>renderTokenItem(t)).join('')}
+        <div class="size-group-label">h2 — 24px</div>
+        ${SEMANTIC_HEADINGS.filter(t=>t.size===24).map(t=>renderTokenItem(t)).join('')}
+        <div class="size-group-label">h3 — 20px</div>
+        ${SEMANTIC_HEADINGS.filter(t=>t.size===20).map(t=>renderTokenItem(t)).join('')}
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Subtitles</div>
+        <div class="subsection-desc">Sub-section titles, panel headers, modal titles.</div>
+      </div>
+      <div class="token-list">
+        <div class="size-group-label">subtitle/1 — 18px</div>
+        ${SEMANTIC_SUBTITLES.filter(t=>t.size===18).map(t=>renderTokenItem(t)).join('')}
+        <div class="size-group-label">subtitle/2 — 16px</div>
+        ${SEMANTIC_SUBTITLES.filter(t=>t.size===16).map(t=>renderTokenItem(t)).join('')}
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Body</div>
+        <div class="subsection-desc">Default UI text, paragraphs, descriptions, form fields, table cells.</div>
+      </div>
+      <div class="token-list">
+        <div class="size-group-label">body/1 — 14px</div>
+        ${SEMANTIC_BODY.filter(t=>t.size===14).map(t=>renderTokenItem(t)).join('')}
+        <div class="size-group-label">body/2 — 12px</div>
+        ${SEMANTIC_BODY.filter(t=>t.size===12).map(t=>renderTokenItem(t)).join('')}
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Components</div>
+        <div class="subsection-desc">Styles for specific UI elements — buttons, tables, badges, inputs.</div>
+      </div>
+      <div class="token-list">${SEMANTIC_COMPONENTS.map(t=>renderTokenItem(t)).join('')}</div>
+    </div>
+  </div>
+`;
+
+// ══════════════════════════════════════════════════════════════
+//  COLOR TOKENS
+// ══════════════════════════════════════════════════════════════
+
+// ─── Semantic data (used to compute referenced primitives) ──────
+const SEMANTIC_BRAND = [
+  { token:'color/brand/primary/default', ref:'signal-orange/500', hex:'#FF5A1F', desc:'CTAs, active states, accents' },
+  { token:'color/brand/primary/hover',   ref:'signal-orange/600', hex:'#D03801', desc:'Darkened brand color for hover' },
+  { token:'color/brand/primary/subtle',  ref:'signal-orange/100', hex:'#FEECDC', desc:'Tinted fill behind brand elements' },
+  { token:'color/brand/secondary',       ref:'atlas-green/500',   hex:'#50CD62', desc:'Secondary brand accent' },
+  { token:'color/brand/tertiary',        ref:'beacon-teal/500',   hex:'#0694A2', desc:'Tertiary brand accent' },
+  { token:'color/brand/quaternary',      ref:'insight-purple/500',hex:'#9061F9', desc:'Quaternary brand accent' },
+];
+const SEMANTIC_SURFACE = [
+  { token:'color/surface/primary',   ref:'compass-cream/100', hex:'#F9EEC6', desc:'Base app background' },
+  { token:'color/surface/secondary', ref:'compass-cream/200', hex:'#D0C5A2', desc:'Cards, panels, sidebars' },
+  { token:'color/surface/tertiary',  ref:'compass-cream/300', hex:'#A79E7F', desc:'Nested panels, hover rows, subtle fills' },
+  { token:'color/surface/inverse',   ref:'meridian/900',      hex:'#2D1D1A', desc:'Dark surfaces, hero sections' },
+  { token:'color/surface/brand',     ref:'signal-orange/100', hex:'#FEECDC', desc:'Brand-tinted surface behind highlighted content' },
+  { token:'color/fill/primary',      ref:'compass-cream/400', hex:'#7D7457', desc:'Tooltips, popovers' },
+];
+const SEMANTIC_TEXT_C = [
+  { token:'color/text/primary',   ref:'meridian/900',      hex:'#2D1D1A', desc:'Main body text and headings' },
+  { token:'color/text/secondary', ref:'meridian/600',      hex:'#ABA5A3', desc:'Supporting text, captions, metadata' },
+  { token:'color/text/tertiary',  ref:'meridian/400',      hex:'#EAE8E8', desc:'Placeholder text, helper text' },
+  { token:'color/text/disabled',  ref:'grey/300',          hex:'#77776D', desc:'Any text in a disabled state' },
+  { token:'color/text/inverse',   ref:'compass-cream/100', hex:'#F9EEC6', desc:'Text on dark or brand surfaces' },
+];
+const SEMANTIC_BORDER = [
+  { token:'color/border/default',  ref:'compass-cream/400', hex:'#7D7457', desc:'Standard borders on panels, cards, inputs' },
+  { token:'color/border/subtle',   ref:'compass-cream/200', hex:'#D0C5A2', desc:'Low-emphasis dividers and row separators' },
+  { token:'color/border/strong',   ref:'meridian/700',      hex:'#6C615F', desc:'High-emphasis borders' },
+  { token:'color/border/disabled', ref:'grey/200',          hex:'#B1B1A7', desc:'Borders on disabled inputs and controls' },
+];
+const SEMANTIC_UTILITY = [
+  { token:'color/utility/success',        ref:'atlas-green/600',  hex:'#31AF44', desc:'Success text, icons, and borders' },
+  { token:'color/utility/success/subtle', ref:'atlas-green/100',  hex:'#D9F4DE', desc:'Success background fills' },
+  { token:'color/utility/warning',        ref:'lumen-yellow/600', hex:'#86710C', desc:'Warning text, icons, and borders' },
+  { token:'color/utility/warning/subtle', ref:'lumen-yellow/100', hex:'#FAF1C5', desc:'Warning background fills' },
+  { token:'color/utility/error',          ref:'red/600',          hex:'#ED1307', desc:'Error text, icons, and borders' },
+  { token:'color/utility/error/subtle',   ref:'red/100',          hex:'#FEE5E3', desc:'Error background fills' },
+  { token:'color/utility/info',           ref:'blue/600',         hex:'#3357BA', desc:'Informational text, icons, and borders' },
+  { token:'color/utility/info/subtle',    ref:'blue/100',         hex:'#EAEEF9', desc:'Info background fills' },
+];
+const COMPONENT_LINK = [
+  { token:'color/link/default',  ref:'color/brand/primary',      hex:'#FF5A1F', desc:'Resting link text' },
+  { token:'color/link/hover',    ref:'color/brand/primary/hover', hex:'#D03801', desc:'Hovered link' },
+  { token:'color/link/visited',  ref:'insight-purple/500',        hex:'#9061F9', desc:'Previously visited link' },
+  { token:'color/link/disabled', ref:'color/text/disabled',       hex:'#77776D', desc:'Non-interactive link' },
+];
+const COMPONENT_BUTTON = [
+  { token:'color/button/primary/default',    ref:'color/brand/primary',        hex:'#FF5A1F', desc:'Resting primary button fill' },
+  { token:'color/button/primary/hover',      ref:'color/brand/primary/hover',  hex:'#D03801', desc:'Hovered primary button fill' },
+  { token:'color/button/primary/active',     ref:'signal-orange/700',          hex:'#B43403', desc:'Pressed primary button fill' },
+  { token:'color/button/primary/disabled',   ref:'grey/200',                   hex:'#B1B1A7', desc:'Disabled primary button fill' },
+  { token:'color/button/secondary/default',  ref:'color/brand/primary',        hex:'#FF5A1F', desc:'Resting secondary button border' },
+  { token:'color/button/secondary/hover',    ref:'color/brand/primary/subtle', hex:'#FEECDC', desc:'Hovered secondary button fill' },
+  { token:'color/button/secondary/disabled', ref:'grey/200',                   hex:'#B1B1A7', desc:'Disabled secondary button border' },
+  { token:'color/button/danger/default',     ref:'color/utility/error',        hex:'#ED1307', desc:'Destructive action button' },
+  { token:'color/button/danger/hover',       ref:'red/700',                    hex:'#C01200', desc:'Hovered destructive button' },
+];
+const COMPONENT_INPUT = [
+  { token:'color/input/border/default',  ref:'color/border/default',    hex:'#7D7457', desc:'Resting input border' },
+  { token:'color/input/border/focus',    ref:'color/brand/primary',     hex:'#FF5A1F', desc:'Focused input border' },
+  { token:'color/input/border/error',    ref:'color/utility/error',     hex:'#ED1307', desc:'Input with validation error' },
+  { token:'color/input/border/disabled', ref:'color/border/disabled',   hex:'#B1B1A7', desc:'Disabled input border' },
+  { token:'color/input/fill/default',    ref:'color/surface/primary',   hex:'#F9EEC6', desc:'Resting input background' },
+  { token:'color/input/fill/disabled',   ref:'color/surface/secondary', hex:'#D0C5A2', desc:'Disabled input background' },
+];
+const COMPONENT_ICONS = [
+  { token:'color/icon/default',   ref:'color/text/primary',    hex:'#2D1D1A', desc:'Icon paired with primary text' },
+  { token:'color/icon/secondary', ref:'color/text/secondary',  hex:'#ABA5A3', desc:'Supporting or decorative icons' },
+  { token:'color/icon/tertiary',  ref:'color/text/tertiary',   hex:'#EAE8E8', desc:'Low-emphasis or placeholder context' },
+  { token:'color/icon/disabled',  ref:'color/text/disabled',   hex:'#77776D', desc:'Icon in a disabled component' },
+  { token:'color/icon/inverse',   ref:'color/text/inverse',    hex:'#F9EEC6', desc:'Icon on dark or brand surface' },
+  { token:'color/icon/brand',     ref:'color/brand/primary',   hex:'#FF5A1F', desc:'Brand-accented standalone icon' },
+  { token:'color/icon/success',   ref:'color/utility/success', hex:'#31AF44', desc:'Icon in a success state or alert' },
+  { token:'color/icon/warning',   ref:'color/utility/warning', hex:'#86710C', desc:'Icon in a warning state or alert' },
+  { token:'color/icon/error',     ref:'color/utility/error',   hex:'#ED1307', desc:'Icon in an error state or alert' },
+  { token:'color/icon/info',      ref:'color/utility/info',    hex:'#3357BA', desc:'Icon in an informational alert' },
+];
+const COMPONENT_GRADIENTS = [
+  { token:'color/gradient/high-energy',        gradient:'linear-gradient(135deg,#FF5A1F,#ECEC7B)', desc:'Orange → Yellow — energy, growth' },
+  { token:'color/gradient/light-bright',       gradient:'linear-gradient(135deg,#47FAC4,#81C661)', desc:'Teal → Green — clarity, freshness' },
+  { token:'color/gradient/bold-honest',        gradient:'linear-gradient(135deg,#FF5A1F,#2D1D1A)', desc:'Orange → Meridian — bold brand moments' },
+  { token:'color/gradient/subtle-backgrounds', gradient:'linear-gradient(135deg,#F9EEC6,#B1B1A7)', desc:'Cream → Grey — subtle backgrounds' },
+];
+
+// ─── Build set of referenced primitive keys ──────────────────────
+// A primitive ref looks like "family-slug/scale" (no "color/" prefix).
+const ALL_SEMANTIC = [
+  ...SEMANTIC_BRAND, ...SEMANTIC_SURFACE, ...SEMANTIC_TEXT_C,
+  ...SEMANTIC_BORDER, ...SEMANTIC_UTILITY,
+  ...COMPONENT_LINK, ...COMPONENT_BUTTON, ...COMPONENT_INPUT,
+  ...COMPONENT_ICONS,
+];
+
+const USED_PRIMITIVES = new Set(
+  ALL_SEMANTIC
+    .map(t => t.ref)
+    .filter(r => r && !r.startsWith('color/'))
+);
+
+// ─── Primitive families ──────────────────────────────────────────
+const PRIMITIVE_FAMILIES = [
+  { name:'Meridian', tokens:[
+    { scale:'base', hex:'#2D1D1A' }, { scale:'50',  hex:'#FBFBFB' },
+    { scale:'100',  hex:'#F8F7F7' }, { scale:'200', hex:'#F4F3F3' },
+    { scale:'300',  hex:'#EDECEC' }, { scale:'400', hex:'#EAE8E8' },
+    { scale:'500',  hex:'#D5D2D1' }, { scale:'600', hex:'#ABA5A3' },
+    { scale:'700',  hex:'#6C615F' }, { scale:'800', hex:'#423431' },
+    { scale:'900',  hex:'#2D1D1A' },
+  ]},
+  { name:'Compass Cream', tokens:[
+    { scale:'base', hex:'#E9D491' }, { scale:'100', hex:'#F9EEC6' },
+    { scale:'200',  hex:'#D0C5A2' }, { scale:'300', hex:'#A79E7F' },
+    { scale:'400',  hex:'#7D7457' }, { scale:'500', hex:'#4E4432' },
+  ]},
+  { name:'Atlas Green', tokens:[
+    { scale:'base', hex:'#81C661' }, { scale:'50',  hex:'#F2FBF4' },
+    { scale:'100',  hex:'#D9F4DE' }, { scale:'200', hex:'#C0EDC7' },
+    { scale:'300',  hex:'#9BE3A6' }, { scale:'400', hex:'#75D884' },
+    { scale:'500',  hex:'#50CD62' }, { scale:'600', hex:'#31AF44' },
+    { scale:'700',  hex:'#247F32' }, { scale:'800', hex:'#16501F' },
+    { scale:'900',  hex:'#0D3013' },
+  ]},
+  { name:'Signal Orange', tokens:[
+    { scale:'base', hex:'#F55A26' }, { scale:'50',  hex:'#FFF8F1' },
+    { scale:'100',  hex:'#FEECDC' }, { scale:'200', hex:'#FCD9BD' },
+    { scale:'300',  hex:'#FDBA8C' }, { scale:'400', hex:'#FF8A4C' },
+    { scale:'500',  hex:'#FF5A1F' }, { scale:'600', hex:'#D03801' },
+    { scale:'700',  hex:'#B43403' }, { scale:'800', hex:'#8A2C0D' },
+    { scale:'900',  hex:'#771D1D' },
+  ]},
+  { name:'Beacon Teal', tokens:[
+    { scale:'base', hex:'#47FAC4' }, { scale:'50',  hex:'#EDFAFA' },
+    { scale:'100',  hex:'#D5F5F6' }, { scale:'200', hex:'#AFECEF' },
+    { scale:'300',  hex:'#7EDCE2' }, { scale:'400', hex:'#16BDCA' },
+    { scale:'500',  hex:'#0694A2' }, { scale:'600', hex:'#047481' },
+    { scale:'700',  hex:'#036672' }, { scale:'800', hex:'#05505C' },
+    { scale:'900',  hex:'#014451' },
+  ]},
+  { name:'Grounded Brown', tokens:[
+    { scale:'base', hex:'#A66B42' },
+  ]},
+  { name:'Insight Purple', tokens:[
+    { scale:'base', hex:'#C370F3' }, { scale:'50',  hex:'#F6F5FF' },
+    { scale:'100',  hex:'#EDEBFE' }, { scale:'200', hex:'#DCD7FE' },
+    { scale:'300',  hex:'#CABFFD' }, { scale:'400', hex:'#AC94FA' },
+    { scale:'500',  hex:'#9061F9' }, { scale:'600', hex:'#7E3AF2' },
+    { scale:'700',  hex:'#6C2BD9' }, { scale:'800', hex:'#5521B5' },
+    { scale:'900',  hex:'#4A1D96' },
+  ]},
+  { name:'Lumen Yellow', tokens:[
+    { scale:'base', hex:'#ECEC7B' }, { scale:'50',  hex:'#FCF8E2' },
+    { scale:'100',  hex:'#FAF1C5' }, { scale:'200', hex:'#F4E07D' },
+    { scale:'300',  hex:'#EDCE36' }, { scale:'400', hex:'#E5C214' },
+    { scale:'500',  hex:'#AC920F' }, { scale:'600', hex:'#86710C' },
+    { scale:'700',  hex:'#73610A' }, { scale:'800', hex:'#605108' },
+    { scale:'900',  hex:'#4C4107' },
+  ]},
+  { name:'Grey', tokens:[
+    { scale:'50',  hex:'#F7F7E3' }, { scale:'100', hex:'#DFDFD2' },
+    { scale:'200', hex:'#B1B1A7' }, { scale:'300', hex:'#77776D' },
+    { scale:'400', hex:'#2A2A26' }, { scale:'500', hex:'#1D1D1B' },
+  ]},
+  { name:'Red', tokens:[
+    { scale:'100', hex:'#FEE5E3' }, { scale:'600', hex:'#ED1307' },
+  ]},
+  { name:'Blue', tokens:[
+    { scale:'100', hex:'#EAEEF9' }, { scale:'600', hex:'#3357BA' },
+  ]},
+];
+
+// ─── Render helpers ──────────────────────────────────────────────
+function renderColorItem({ token, ref, hex, desc }) {
+  return `
+    <div class="color-item">
+      <div class="inkwell-wrap">
+        <div class="inkwell" style="background:${hex};"></div>
+      </div>
+      <div class="color-info">
+        <div class="color-token-name">${token}</div>
+        ${ref ? `<div class="color-ref">→ ${ref}</div>` : ''}
+        ${desc ? `<div class="color-desc">${desc}</div>` : ''}
+      </div>
+      <div class="color-hex">${hex}</div>
+    </div>`;
+}
+
+function renderGradientItem({ token, gradient, desc }) {
+  return `
+    <div class="color-item">
+      <div class="inkwell-wrap">
+        <div class="inkwell" style="background:${gradient};"></div>
+      </div>
+      <div class="color-info">
+        <div class="color-token-name">${token}</div>
+        ${desc ? `<div class="color-desc">${desc}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderFamily(family) {
+  const slug = family.name.toLowerCase().replace(/\s+/g, '-');
+  const items = family.tokens.map(t => {
+    const key     = `${slug}/${t.scale}`;
+    const isUsed  = USED_PRIMITIVES.has(key);
+    const token   = `color/primitive/${slug}/${t.scale}`;
+    const badge   = isUsed ? '' : `<span class="unused-badge">unreferenced</span>`;
+    return `
+      <div class="color-item">
+        <div class="inkwell-wrap">
+          <div class="inkwell" style="background:${t.hex};"></div>
+        </div>
+        <div class="color-info">
+          <div class="color-token-name">${token}${badge}</div>
+        </div>
+        <div class="color-hex">${t.hex}</div>
+      </div>`;
+  }).join('');
+  return `<div class="color-group-label">${family.name}</div>${items}`;
+}
+
+function renderSemanticGroup(label, desc, tokens) {
+  return `
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">${label}</div>
+        ${desc ? `<div class="subsection-desc">${desc}</div>` : ''}
+      </div>
+      ${tokens.map(t => renderColorItem(t)).join('')}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPACING TOKENS
+// ══════════════════════════════════════════════════════════════
+
+// Base unit is 8px. Half-steps (4px increments) up to 40px,
+// then full 8px steps from 48 → 96.
+const SPACING_SCALE = [
+  // half-steps  (4px increments, up to 40)
+  { step:'0.5',  px:4  },
+  { step:'1',    px:8  },
+  { step:'1.5',  px:12 },
+  { step:'2',    px:16 },
+  { step:'2.5',  px:20 },
+  { step:'3',    px:24 },
+  { step:'3.5',  px:28 },
+  { step:'4',    px:32 },
+  { step:'4.5',  px:36 },
+  { step:'5',    px:40 },
+  // full 8px steps 48 → 96
+  { step:'6',    px:48 },
+  { step:'7',    px:56 },
+  { step:'8',    px:64 },
+  { step:'9',    px:72 },
+  { step:'10',   px:80 },
+  { step:'11',   px:88 },
+  { step:'12',   px:96 },
+];
+
+// The bar is rendered at actual px width so the visual is 1:1.
+// Half-steps use teal, full steps (8px multiples) use orange, 48+ use purple.
+function spacingKind(s) {
+  if (s.px > 40)   return 'large';
+  if (s.px % 8 === 0) return 'full';
+  return 'half';
+}
+
+function spacingStepLabel(s) {
+  if (s.px > 40)   return `step ${s.step} · 8px base`;
+  if (s.px % 8 === 0) return `step ${s.step} · full`;
+  return `step ${s.step} · half`;
+}
+
+function renderSpacingItem(s) {
+  const kind  = spacingKind(s);
+  const token = `spacing/${s.step}`;
+  const label = spacingStepLabel(s);
+  return `
+    <div class="spacing-item">
+      <div class="spacing-meta">
+        <div class="spacing-token">${token}</div>
+        <div class="spacing-step-label">${label}</div>
+      </div>
+      <div class="spacing-track">
+        <div class="spacing-bar-wrap">
+          <div class="spacing-tick"></div>
+          <div class="spacing-bar ${kind}" style="width:${s.px}px;"></div>
+        </div>
+      </div>
+      <div class="spacing-value">${s.px}px</div>
+    </div>`;
+}
+
+document.getElementById('spacing-root').innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Scale</span>
+      <span class="section-title">Spacing Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+
+    <div class="spacing-legend">
+      <div class="spacing-legend-item">
+        <div class="legend-dot full"></div>
+        <span>Full step — 8px multiple</span>
+      </div>
+      <div class="spacing-legend-item">
+        <div class="legend-dot half"></div>
+        <span>Half step — 4px increment</span>
+      </div>
+      <div class="spacing-legend-item">
+        <div class="legend-dot large"></div>
+        <span>Large step — 48px+</span>
+      </div>
+      <div style="margin-left:auto;font-size:11px;color:var(--text-dim);">Base unit: 8px · Bars rendered at 1:1 scale</div>
+    </div>
+
+    <div class="spacing-list">
+      ${SPACING_SCALE.map(renderSpacingItem).join('')}
+    </div>
+  </div>
+`;
+
+// ══════════════════════════════════════════════════════════════
+//  CORNER RADIUS TOKENS
+// ══════════════════════════════════════════════════════════════
+
+// Primitive scale: 4px half-steps to 16, then 24, then 999 (oval).
+const RADIUS_PRIMITIVES = [
+  { step:'0.5',  px:4,   kind:'half' },
+  { step:'1',    px:8,   kind:'full' },
+  { step:'1.5',  px:12,  kind:'half' },
+  { step:'2',    px:16,  kind:'full' },
+  { step:'3',    px:24,  kind:'full' },
+  { step:'full', px:999, kind:'oval' },
+];
+
+// Semantic tokens — reference a primitive by step key.
+const RADIUS_SEMANTIC = [
+  { name:'small',   refStep:'0.5',  px:4,   desc:'Subtle rounding — chips, tags, small inputs' },
+  { name:'default', refStep:'1',    px:8,   desc:'Standard rounding — cards, buttons, modals' },
+  { name:'oval',    refStep:'full', px:999, desc:'Fully rounded — pills, avatars, badges' },
+];
+
+function renderRadiusPrimitive(r) {
+  const token    = `radius/primitive/${r.step}`;
+  const displayR = r.px >= 999 ? '999px' : `${r.px}px`;
+  // For the demo box, clamp actual CSS radius to 28px max (half of 56) so very
+  // large values just become a circle rather than an invisible overflow.
+  const cssR     = r.px >= 999 ? '50%' : `${r.px}px`;
+  const kindText = r.kind === 'oval' ? 'oval · full round'
+                 : r.kind === 'half' ? `step ${r.step} · half`
+                 : `step ${r.step} · full`;
+
+  return `
+    <div class="radius-item">
+      <div class="radius-meta">
+        <div class="radius-token">${token}</div>
+        <div class="radius-kind-label">${kindText}</div>
+      </div>
+      <div class="radius-swatch-area">
+        <div class="radius-demo" style="border-radius:${cssR};"></div>
+        ${r.px < 999 ? `
+        <div class="radius-corner-hint">
+          <div class="radius-corner-label">↳ corner</div>
+          <div style="
+            width:28px; height:28px;
+            border-top: 2px solid rgba(255,90,31,0.5);
+            border-left: 2px solid rgba(255,90,31,0.5);
+            border-top-left-radius:${cssR};
+          "></div>
+        </div>` : ''}
+      </div>
+      <div class="radius-value">${displayR}</div>
+    </div>`;
+}
+
+function renderRadiusSemantic(s) {
+  const token  = `radius/${s.name}`;
+  const ref    = `radius/primitive/${s.refStep}`;
+  const cssR   = s.px >= 999 ? '50%' : `${s.px}px`;
+  const dispR  = s.px >= 999 ? '999px' : `${s.px}px`;
+
+  return `
+    <div class="radius-item">
+      <div class="radius-meta">
+        <div class="radius-token">${token}</div>
+        <div class="radius-ref">→ ${ref}</div>
+        <div class="radius-kind-label">${s.desc}</div>
+      </div>
+      <div class="radius-swatch-area">
+        <div class="radius-demo semantic" style="border-radius:${cssR};"></div>
+        ${s.px < 999 ? `
+        <div class="radius-corner-hint">
+          <div class="radius-corner-label">↳ corner</div>
+          <div style="
+            width:28px; height:28px;
+            border-top: 2px solid rgba(22,189,202,0.5);
+            border-left: 2px solid rgba(22,189,202,0.5);
+            border-top-left-radius:${cssR};
+          "></div>
+        </div>` : ''}
+      </div>
+      <div class="radius-value">${dispR}</div>
+    </div>`;
+}
+
+document.getElementById('radius-root').innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Primitive</span>
+      <span class="section-title">Corner Radius</span>
+      <span class="section-rule"></span>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Primitive Scale</div>
+        <div class="subsection-desc">8px base unit with 4px half-steps up to 16px, then 24px, then full-oval at 999px. Never used directly — referenced by semantic tokens.</div>
+      </div>
+      <div class="radius-list">
+        ${RADIUS_PRIMITIVES.map(renderRadiusPrimitive).join('')}
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Semantic Tokens</div>
+        <div class="subsection-desc">Intent-mapped aliases that components consume. Each references a primitive step.</div>
+      </div>
+      <div class="radius-list">
+        ${RADIUS_SEMANTIC.map(renderRadiusSemantic).join('')}
+      </div>
+    </div>
+  </div>
+`;
+
+// ══════════════════════════════════════════════════════════════
+//  SHADOW TOKENS
+// ══════════════════════════════════════════════════════════════
+// Shadow color is Meridian/900 (#2D1D1A) — warm near-black.
+// Each level adds a tighter contact shadow + a broader ambient layer.
+
+const SHADOW_PRIMITIVES = [
+  {
+    key: '1',
+    label: 'step 1 · small',
+    value: '0 1px 2px rgba(26,18,16,0.18), 0 1px 4px rgba(26,18,16,0.10)',
+    layers: ['0 1px 2px rgba(26,18,16,0.18)', '0 1px 4px rgba(26,18,16,0.10)'],
+  },
+  {
+    key: '2',
+    label: 'step 2 · medium',
+    value: '0 2px 4px rgba(26,18,16,0.14), 0 6px 16px rgba(26,18,16,0.22)',
+    layers: ['0 2px 4px rgba(26,18,16,0.14)', '0 6px 16px rgba(26,18,16,0.22)'],
+  },
+  {
+    key: '3',
+    label: 'step 3 · large',
+    value: '0 4px 8px rgba(26,18,16,0.12), 0 16px 40px rgba(26,18,16,0.32), 0 2px 2px rgba(26,18,16,0.08)',
+    layers: ['0 4px 8px rgba(26,18,16,0.12)', '0 16px 40px rgba(26,18,16,0.32)', '0 2px 2px rgba(26,18,16,0.08)'],
+  },
+];
+
+const SHADOW_SEMANTIC = [
+  {
+    name: 'small',
+    refKey: '1',
+    desc: 'Chips, inputs, inline elements — barely lifted off the surface',
+    value: '0 1px 2px rgba(26,18,16,0.18), 0 1px 4px rgba(26,18,16,0.10)',
+    layers: ['0 1px 2px rgba(26,18,16,0.18)', '0 1px 4px rgba(26,18,16,0.10)'],
+  },
+  {
+    name: 'medium',
+    refKey: '2',
+    desc: 'Cards, panels, dropdowns, sidebars — clear separation from the page',
+    value: '0 2px 4px rgba(26,18,16,0.14), 0 6px 16px rgba(26,18,16,0.22)',
+    layers: ['0 2px 4px rgba(26,18,16,0.14)', '0 6px 16px rgba(26,18,16,0.22)'],
+  },
+  {
+    name: 'large',
+    refKey: '3',
+    desc: 'Modals, dialogs, command palettes — highest elevation on the page',
+    value: '0 4px 8px rgba(26,18,16,0.12), 0 16px 40px rgba(26,18,16,0.32), 0 2px 2px rgba(26,18,16,0.08)',
+    layers: ['0 4px 8px rgba(26,18,16,0.12)', '0 16px 40px rgba(26,18,16,0.32)', '0 2px 2px rgba(26,18,16,0.08)'],
+  },
+];
+
+function formatShadowLayers(layers) {
+  return layers.map(l => `<div>${l}</div>`).join('');
+}
+
+function renderShadowPrimitive(s) {
+  const token = `shadow/primitive/${s.key}`;
+  return `
+    <div class="shadow-item">
+      <div class="shadow-meta">
+        <div class="shadow-token">${token}</div>
+        <div class="shadow-desc">${s.label}</div>
+        <div class="shadow-css">${formatShadowLayers(s.layers)}</div>
+      </div>
+      <div class="shadow-demo-area">
+        <div class="shadow-demo-card" style="box-shadow:${s.value};">
+          <span class="shadow-demo-label">${s.key}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderShadowSemantic(s) {
+  const token = `shadow/${s.name}`;
+  const ref   = `shadow/primitive/${s.refKey}`;
+  return `
+    <div class="shadow-item">
+      <div class="shadow-meta">
+        <div class="shadow-token">${token}</div>
+        <div class="shadow-ref">→ ${ref}</div>
+        <div class="shadow-desc">${s.desc}</div>
+        <div class="shadow-css">${formatShadowLayers(s.layers)}</div>
+      </div>
+      <div class="shadow-demo-area">
+        <div class="shadow-demo-card" style="box-shadow:${s.value};">
+          <span class="shadow-demo-label">${s.name}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+document.getElementById('shadow-root').innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Primitive</span>
+      <span class="section-title">Shadow Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Primitive Scale</div>
+        <div class="subsection-desc">Three elevation levels using warm Meridian/900 shadow color. Each level pairs a tight contact shadow with a broader ambient layer. Shown on Compass Cream surface to render true shadow depth.</div>
+      </div>
+      <div class="shadow-list">
+        ${SHADOW_PRIMITIVES.map(renderShadowPrimitive).join('')}
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Semantic Tokens</div>
+        <div class="subsection-desc">Intent-mapped aliases. Components consume these — never the primitives directly.</div>
+      </div>
+      <div class="shadow-list">
+        ${SHADOW_SEMANTIC.map(renderShadowSemantic).join('')}
+      </div>
+    </div>
+  </div>
+`;
+
+// ─── Build color page ────────────────────────────────────────────
+document.getElementById('color-root').innerHTML = `
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Primitive</span>
+      <span class="section-title">Primitive Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Color Families</div>
+        <div class="subsection-desc">Raw palette values named by family and scale. Never used directly in components — they feed the semantic layer. Tokens marked <em>unreferenced</em> are not consumed by any semantic or component token.</div>
+      </div>
+      ${PRIMITIVE_FAMILIES.map(renderFamily).join('')}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Semantic · Global</span>
+      <span class="section-title">Global Semantic Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+    ${renderSemanticGroup('Brand', 'Core brand colors — CTAs, accents, and interactive elements.', SEMANTIC_BRAND)}
+    ${renderSemanticGroup('Surface', 'Background colors for layouts and containers. Scale describes elevation.', SEMANTIC_SURFACE)}
+    ${renderSemanticGroup('Text', 'Text colors for typographic contexts only.', SEMANTIC_TEXT_C)}
+    ${renderSemanticGroup('Border', 'Stroke colors for containers, inputs, tables, and dividers.', SEMANTIC_BORDER)}
+    ${renderSemanticGroup('Utility', 'Feedback and status colors for alerts, validation, and inline messaging.', SEMANTIC_UTILITY)}
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Semantic · Component</span>
+      <span class="section-title">Component Semantic Tokens</span>
+      <span class="section-rule"></span>
+    </div>
+    ${renderSemanticGroup('Link', 'Text links and link-style buttons.', COMPONENT_LINK)}
+    ${renderSemanticGroup('Button', 'Primary, secondary, and destructive button fills and borders.', COMPONENT_BUTTON)}
+    ${renderSemanticGroup('Input', 'Form inputs and text field states.', COMPONENT_INPUT)}
+    ${renderSemanticGroup('Icons', 'Independent icon colors that inherit state from their parent component.', COMPONENT_ICONS)}
+    <div class="subsection">
+      <div class="subsection-header">
+        <div class="subsection-name">Gradients</div>
+        <div class="subsection-desc">Four gradients for data visualization, marketing surfaces, and illustrations.</div>
+      </div>
+      ${COMPONENT_GRADIENTS.map(renderGradientItem).join('')}
+    </div>
+  </div>
+`;
+</script>
+</body>
+</html>
