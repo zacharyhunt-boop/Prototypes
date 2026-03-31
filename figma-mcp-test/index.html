@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Underwriting Knowledge Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --surface-primary:   #fbfbfb;
+      --surface-secondary: #ffffff;
+      --surface-tertiary:  #eae8e8;
+      --text-primary:      #252120;
+      --text-secondary:    #565251;
+      --border-primary:    #cfcecd;
+      --badge-fill:        #f2f2f2;
+      --badge-text:        #565251;
+      --header-bg:         #2d1d1a;
+      --header-search-bg:  #423431;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--surface-primary);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── App Header ─────────────────────────────── */
+    .app-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: var(--header-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .app-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('http://localhost:3845/assets/2e8fee7806cbdca96bcfb12ae4345314caa7fcf6.png') center/cover;
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+    }
+
+    .header-logo {
+      position: relative;
+      height: 20px;
+      width: 165px;
+      flex-shrink: 0;
+    }
+
+    .header-logo img {
+      position: absolute;
+      display: block;
+    }
+
+    .header-search {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--header-search-bg);
+      border-radius: 8px;
+      height: 32px;
+      width: 400px;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+
+    .header-search img {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .header-search span {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      justify-content: flex-end;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .header-icon img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 100px;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .header-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Sidebar ────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 232px;
+      bottom: 0;
+      background: var(--surface-secondary);
+      border-right: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 90;
+    }
+
+    .sidebar-nav {
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .nav-item:hover {
+      background: var(--surface-tertiary);
+    }
+
+    .nav-item.active {
+      background: var(--surface-tertiary);
+    }
+
+    .nav-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .nav-item-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-icon img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .nav-icon-lg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      line-height: 1.5;
+    }
+
+    .chevron {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .chevron img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chevron-sm {
+      width: 16px;
+      height: 16px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-child-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-child {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .nav-child:hover {
+      background: var(--surface-tertiary);
+    }
+
+    .nav-child .nav-icon-lg {
+      /* placeholder for icons that don't have img src */
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-child .nav-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1;
+      letter-spacing: -0.56px;
+      white-space: nowrap;
+    }
+
+    .nav-divider {
+      height: 32px;
+      width: 197px;
+      margin: 4px 0;
+      overflow: hidden;
+    }
+
+    .nav-divider img {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-primary);
+      background: var(--surface-secondary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .sidebar-footer-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .sidebar-footer-row .nav-icon {
+      overflow: hidden;
+    }
+
+    /* ── Main Content ───────────────────────────── */
+    .main {
+      margin-left: 232px;
+      padding-top: 56px;
+    }
+
+    .main-inner {
+      padding: 40px 40px 40px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Page heading */
+    .page-heading {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .page-title {
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      border-bottom: 1px solid var(--border-primary);
+      height: 53px;
+    }
+
+    .tab {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 16px 0;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .tab.active {
+      border-bottom-color: var(--text-primary);
+    }
+
+    .tab-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .tab.active .tab-text {
+      color: var(--text-primary);
+    }
+
+    /* Content area */
+    .content-area {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Add Document button */
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--text-primary);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-add:hover {
+      background: #3a3230;
+    }
+
+    .btn-add-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* Document sections */
+    .doc-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .doc-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+
+    .doc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .doc-row-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .doc-icon-wrap {
+      width: 40px;
+      height: 40px;
+      background: var(--badge-fill);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .doc-icon-wrap img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .doc-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .doc-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 10px;
+      background: var(--badge-fill);
+      border-radius: 20px;
+    }
+
+    .doc-badge span {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--badge-text);
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .doc-delete {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    .doc-delete:hover {
+      opacity: 1;
+    }
+
+    .doc-delete img {
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <!-- FEDERATO Logo -->
+    <div class="header-logo">
+      <img src="http://localhost:3845/assets/070265317e25140ada28cb113abcd41ad529c59d.svg" alt="F" style="left:0;top:50%;transform:translateY(-50%);width:15.624px;height:19.338px;">
+      <img src="http://localhost:3845/assets/7c8ccf219c50ef4ca71313401b3fc6386c1c392a.svg" alt="E" style="left:18.63px;top:50%;transform:translateY(-50%);width:15.821px;height:19.34px;">
+      <img src="http://localhost:3845/assets/7eceb4b077e5ff1fcbba8403fcb57891d7512852.svg" alt="D" style="left:38.04px;top:50%;transform:translateY(-50%);width:18.182px;height:19.34px;">
+      <img src="http://localhost:3845/assets/f51b42d94547cca6f2b401e157abc800226c071b.svg" alt="E" style="left:59.02px;top:50%;transform:translateY(-50%);width:15.821px;height:19.34px;">
+      <img src="http://localhost:3845/assets/d2e8039456b5da3d9e81c2562d317210a754cfc9.svg" alt="R" style="left:78.43px;top:50%;transform:translateY(-50%);width:17.65px;height:19.34px;">
+      <img src="http://localhost:3845/assets/639ad884f5c469fbb23590b13cd8c595743b80d0.svg" alt="A" style="left:97.62px;top:50%;transform:translateY(-50%);width:22.509px;height:19.338px;">
+      <img src="http://localhost:3845/assets/7b4460d571a570837f6207b0ed48ad9c03659565.svg" alt="T" style="left:117.66px;top:50%;transform:translateY(-50%);width:18.801px;height:19.338px;">
+      <img src="http://localhost:3845/assets/9bc186bb24ea52ff5433f6026ba6bbdd76acadd9.svg" alt="O" style="left:136.97px;top:50%;transform:translateY(-50%);width:20.317px;height:20px;">
+      <img src="http://localhost:3845/assets/b55c06b58ccb4d148a685ce0963c6dbcf034313a.svg" alt="." style="left:143.25px;top:calc(50% + 0.05px);transform:translateY(-50%);width:7.635px;height:7.485px;">
+    </div>
+
+    <!-- Search bar -->
+    <div class="header-search">
+      <img src="http://localhost:3845/assets/8efa84c5defd3d36478eada498f6e91d24274f8d.svg" alt="search">
+      <span>Search or ask...</span>
+    </div>
+
+    <!-- Action icons -->
+    <div class="header-actions">
+      <div class="header-icon">
+        <img src="http://localhost:3845/assets/dbaf948956b5e0e4fc8eea32ff6c1f0043e359c9.svg" alt="bolt">
+      </div>
+      <div class="header-icon">
+        <img src="http://localhost:3845/assets/93b514f09c099f00233f717402c1b3535c5662be.svg" alt="support">
+      </div>
+      <div class="header-icon">
+        <img src="http://localhost:3845/assets/027c93840c7ff04e7b30cac4ccf3e6fb92361443.svg" alt="notifications">
+      </div>
+      <div class="header-avatar">
+        <img src="http://localhost:3845/assets/63afde45047af048f797d21a2e3de2f98e4c4b50.png" alt="avatar">
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-nav">
+
+      <!-- Main nav section -->
+      <div class="nav-section">
+
+        <!-- Home -->
+        <div class="nav-item">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/09444d5544a33730d1a207f0c9be0e4ac13d4d16.svg" alt="home">
+              </div>
+              <span class="nav-text">Home</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Control Tower (expanded) -->
+        <div class="nav-group">
+          <div class="nav-item">
+            <div class="nav-item-row">
+              <div class="nav-item-label">
+                <div class="nav-icon">
+                  <img src="http://localhost:3845/assets/a5ba6c65904228bd6a3cc60a605fb404ddd4aa0f.svg" alt="tower">
+                </div>
+                <span class="nav-text">Control Tower</span>
+              </div>
+              <div class="chevron">
+                <img src="http://localhost:3845/assets/0fa50f83e4dccf107ea949a58f8b69eb226d3b4d.svg" alt="chevron-up">
+              </div>
+            </div>
+          </div>
+          <!-- Child items -->
+          <div class="nav-child-group">
+            <div class="nav-child">
+              <div class="nav-icon-lg"></div>
+              <span class="nav-text">Insights</span>
+            </div>
+            <div class="nav-child">
+              <div class="nav-icon-lg"></div>
+              <span class="nav-text">Goals</span>
+            </div>
+            <div class="nav-child">
+              <div class="nav-icon-lg"></div>
+              <span class="nav-text">Submission Triage</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Knowledge Center (active) -->
+        <div class="nav-item active">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/aba71c57d84950e41d65c2f88978f370cdfbcb76.svg" alt="books">
+              </div>
+              <span class="nav-text">Knowledge Center</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider / separator -->
+      <div class="nav-divider">
+        <img src="http://localhost:3845/assets/02e64edeaf08b5d93700f352f5c2fc26ba26174f.svg" alt="">
+      </div>
+
+      <!-- Secondary nav section -->
+      <div class="nav-section">
+
+        <!-- Accounts (collapsed) -->
+        <div class="nav-item">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/4468020a1d1a014e60477b2ae0292bbf37b5671a.svg" alt="accounts">
+              </div>
+              <span class="nav-text">Accounts</span>
+            </div>
+            <div class="chevron">
+              <img src="http://localhost:3845/assets/cff41458fcbaa65f768c252ae4f4c1488945ed71.svg" alt="chevron-down">
+            </div>
+          </div>
+        </div>
+
+        <!-- Submissions -->
+        <div class="nav-item">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/91b4f4349a2a5b1cd283e69b7510645cac833321.svg" alt="submissions">
+              </div>
+              <span class="nav-text">Submissions</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referrals -->
+        <div class="nav-item">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/9a26cd66a8d0bdf2eab42839964189e56e1281ef.svg" alt="referrals">
+              </div>
+              <span class="nav-text">Referrals</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bonds -->
+        <div class="nav-item">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/f515eb761fa04529927fa535603b8987f79d35b5.svg" alt="bonds">
+              </div>
+              <span class="nav-text">Bonds</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="nav-item">
+          <div class="nav-item-row">
+            <div class="nav-item-label">
+              <div class="nav-icon">
+                <img src="http://localhost:3845/assets/c97cd99efb607d2082e7b6388217342a7c48d59a.svg" alt="settings">
+              </div>
+              <span class="nav-text">Settings</span>
+            </div>
+            <div class="chevron" style="width:16px;height:16px;">
+              <img src="http://localhost:3845/assets/2feaf984e0d426e33eb1cbdcb882c7e00999dbb6.svg" alt="arrow-right">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sidebar footer -->
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-row">
+        <div class="nav-icon" style="overflow:hidden;">
+          <img src="http://localhost:3845/assets/0999b9931a0574d55aa860a1b16fb9577c99cbf3.svg" alt="sidebar">
+        </div>
+        <span class="nav-text">Unlock Sidebar</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="main-inner">
+
+      <!-- Page heading -->
+      <div class="page-heading">
+        <h1 class="page-title">Underwriting Knowledge Center</h1>
+        <p class="page-subtitle">Manage guidelines and research agent configuration.</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active">
+          <span class="tab-text">Guidelines</span>
+        </div>
+        <div class="tab">
+          <span class="tab-text">Research Agent</span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content-area">
+
+        <!-- Add Document button -->
+        <button class="btn-add">
+          <span class="btn-add-icon">+</span>
+          Add Document
+        </button>
+
+        <!-- Document sections -->
+        <div class="doc-sections">
+
+          <!-- General Liability -->
+          <div class="doc-section">
+            <span class="section-label">General Liability</span>
+            <div class="doc-row">
+              <div class="doc-row-left">
+                <div class="doc-icon-wrap">
+                  <img src="http://localhost:3845/assets/07cd8be9d51aaac7b2aaa406ca3e60f3aee8e914.svg" alt="document">
+                </div>
+                <div class="doc-info">
+                  <span class="doc-name">HAB GL BRD.docx</span>
+                  <div class="doc-badge"><span>Guideline</span></div>
+                </div>
+              </div>
+              <div class="doc-delete">
+                <img src="http://localhost:3845/assets/47d8b0fe63413f1db2b927ea32f50f7115da5af0.svg" alt="delete">
+              </div>
+            </div>
+          </div>
+
+          <!-- Commercial Property -->
+          <div class="doc-section">
+            <span class="section-label">Commercial Property</span>
+            <div class="doc-row">
+              <div class="doc-row-left">
+                <div class="doc-icon-wrap">
+                  <img src="http://localhost:3845/assets/07cd8be9d51aaac7b2aaa406ca3e60f3aee8e914.svg" alt="document">
+                </div>
+                <div class="doc-info">
+                  <span class="doc-name">HAB GL BRD.docx</span>
+                  <div class="doc-badge"><span>Guideline</span></div>
+                </div>
+              </div>
+              <div class="doc-delete">
+                <img src="http://localhost:3845/assets/47d8b0fe63413f1db2b927ea32f50f7115da5af0.svg" alt="delete">
+              </div>
+            </div>
+          </div>
+
+          <!-- Builders Risk -->
+          <div class="doc-section">
+            <span class="section-label">Builders Risk</span>
+            <div class="doc-row">
+              <div class="doc-row-left">
+                <div class="doc-icon-wrap">
+                  <img src="http://localhost:3845/assets/07cd8be9d51aaac7b2aaa406ca3e60f3aee8e914.svg" alt="document">
+                </div>
+                <div class="doc-info">
+                  <span class="doc-name">HAB GL BRD.docx</span>
+                  <div class="doc-badge"><span>Guideline</span></div>
+                </div>
+              </div>
+              <div class="doc-delete">
+                <img src="http://localhost:3845/assets/47d8b0fe63413f1db2b927ea32f50f7115da5af0.svg" alt="delete">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
